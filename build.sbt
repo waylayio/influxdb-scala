@@ -11,10 +11,20 @@ lazy val libraryExclusions = Seq(
   ExclusionRule("org.apache.logging.log4j", "log4j-core")
 )
 
+lazy val repoSettings = Seq(
+  publishTo := {
+    val nexus = "https://nexus.waylay.io"
+    if (isSnapshot.value)
+      Some("Waylay snapshot repo" at nexus + "/repository/maven-snapshots")
+    else
+      Some("Waylay releases repo" at nexus + "/repository/maven-releases")
+  }
+)
+
 organization in ThisBuild := "io.waylay.influxdb"
 
-lazy val root = (project in file(".")).
-  settings(
+lazy val root = (project in file("."))
+  .settings(
     name := "influxdb-scala",
     scalaVersion := "2.11.8",
 
@@ -30,4 +40,7 @@ lazy val root = (project in file(".")).
       "org.specs2" %% "specs2-junit" % specs2Version % Test,
       "com.whisk" %% "docker-testkit-specs2" % "0.7.0-RC2" % Test
     ).map(_.excludeAll(libraryExclusions:_*))
+  )
+  .settings(
+    repoSettings
   )
