@@ -1,0 +1,2 @@
+# influxdb-scala
+Scala InfluxDB
