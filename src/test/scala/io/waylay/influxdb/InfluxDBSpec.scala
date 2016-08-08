@@ -2,30 +2,35 @@ package io.waylay.influxdb
 
 import java.time.Instant
 
-import akka.stream.Materializer
-import com.whisk.docker.DockerKit
-import io.waylay.influxdb.Influx.{IFloat, IPoint}
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import com.spotify.docker.client.DefaultDockerClient
+import com.whisk.docker.impl.spotify.SpotifyDockerFactory
+import com.whisk.docker.DockerFactory
+import com.whisk.docker.specs2.DockerTestKit
+import integration.DockerInfluxDBService
+import io.waylay.influxdb.Influx.{IFloat, IPoint, IString}
 import io.waylay.influxdb.InfluxDB.Mean
 import io.waylay.influxdb.query.InfluxQueryBuilder
 import io.waylay.influxdb.query.InfluxQueryBuilder.Interval
 import org.asynchttpclient.DefaultAsyncHttpClientConfig
-import org.specs2.mutable.{BeforeAfter, Specification}
+import org.specs2.mutable.Specification
 import org.specs2.specification.core.Env
 import play.api.libs.ws.ahc.AhcWSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class InfluxDBSpec(env: Env) extends Specification{
+class InfluxDBSpec(environment: Env) extends Specification with DockerInfluxDBService with DockerTestKit {
 
-  // TODO Reenable -> Waiting for https://github.com/whisklabs/docker-it-scala/issues/20
-  skipAll
 
-  implicit val ee = env.executionEnv
+  override implicit val dockerFactory: DockerFactory = new SpotifyDockerFactory(DefaultDockerClient.fromEnv().build())
+
+  implicit val ee = environment.executionEnv
 
   "then influxdb client" should{
 
-    "return a version on ping" in new MutableDockerTestKit with DockerInfluxDBService{
+    "return a version on ping" in {
       withInfluxClient(this){ influxClient =>
         val version = Await.result(influxClient.ping, 5.seconds)
         println(version)
@@ -33,7 +38,7 @@ class InfluxDBSpec(env: Env) extends Specification{
       }
     }
 
-    "store and query data" in new MutableDockerTestKit with DockerInfluxDBService{
+    "store and query data" in {
       withInfluxClient(this){ influxClient =>
         val points = Seq(
           IPoint("temperature", Seq("location" -> "room1"), Seq("value" -> IFloat(20.3)), Instant.now())
@@ -46,7 +51,7 @@ class InfluxDBSpec(env: Env) extends Specification{
         eventually(40, 250.millis){
           val data = Await.result(influxClient.query("dbname", query), 5.seconds)
 
-          println(data)
+          //println(data)
 
           (data.error must beNone) and
             (data.results.get.head.series.get must have size 1) and
@@ -55,8 +60,7 @@ class InfluxDBSpec(env: Env) extends Specification{
       }
     }
 
-    "query aggregated data" in new MutableDockerTestKit with DockerInfluxDBService{
-      skipped("see https://github.com/influxdb/influxdb/issues/5120")
+    "query aggregated data" in {
       withInfluxClient(this){ influxClient =>
         val points = Seq(
           IPoint("temperature", Seq("location" -> "room1"), Seq("value" -> IFloat(20)), Instant.ofEpochSecond(0)),
@@ -71,17 +75,20 @@ class InfluxDBSpec(env: Env) extends Specification{
           Mean("value"),
           "location" -> "room1",
           "temperature",
-          InfluxDB.Duration.minutes(1),
+          InfluxDB.Duration.minutes(2),
           Interval.fromUntil(Instant.ofEpochSecond(0), Instant.ofEpochSecond(200))
         )
 
-        println(query)
+        //println(query)
 
         val data = Await.result(influxClient.query("dbname", query), 5.seconds)
         data.error must beNone
-        println(data.results)
-        data.results.get.head.series.get must have size 4
-        data.results.get.head.series.get.head.values.get.head must be equalTo Seq(Some(IFloat(21)), Some(IFloat(25)))
+        //println(data.results)
+        data.results.get.head.series.get must have size 1
+        data.results.get.head.series.get.head.values.get must be equalTo Seq(
+          Seq(Some(IString("1970-01-01T00:00:00Z")), Some(IFloat(21.0))),
+          Seq(Some(IString("1970-01-01T00:02:00Z")), Some(IFloat(25.0)))
+        )
       }
     }
 
@@ -89,30 +96,22 @@ class InfluxDBSpec(env: Env) extends Specification{
 
 
   def withInfluxClient[T](service:DockerInfluxDBService)(block:InfluxDB => T) = {
-    service.influxdbContainer.isReady() must beTrue.await
-    val ports = Await.result(service.influxdbContainer.getPorts()(service.docker, service.dockerExecutionContext), 5.seconds)
-    val mappedInfluxPort = ports.get(InfluxDB.DEFAULT_PORT).get
-
+    implicit val actorSystem = ActorSystem()
+    implicit val materializer = ActorMaterializer()
+    val state = service.getContainerState(service.influxdbContainer)
+    state.isReady() must beTrue.await
+    val ports = Await.result(state.getPorts()(service.dockerExecutor, service.dockerExecutionContext), 5.seconds)
+    val mappedInfluxPort = ports(InfluxDB.DEFAULT_PORT)
+    val host = "localhost" //state.docker.host
     val config = new DefaultAsyncHttpClientConfig.Builder().build()
-    implicit val materializer: Materializer = ???
     val wsClient = new AhcWSClient(config)
     try {
-      val influxClient = new InfluxDB(wsClient, service.docker.host, mappedInfluxPort)(service.dockerExecutionContext)
+      val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)(service.dockerExecutionContext)
       block(influxClient)
     }finally {
       wsClient.close()
+      materializer.shutdown()
+      Await.result(actorSystem.terminate(), 10.seconds)
     }
-  }
-}
-
-trait MutableDockerTestKit extends BeforeAfter with DockerKit {
-  def before() = {
-    println("!!! starting docker images(s): " + dockerContainers.map(_.image).mkString(", "))
-    startAllOrFail()
-  }
-
-  def after() = {
-    println("!!! stopping docker images(s): " + dockerContainers.map(_.image).mkString(", "))
-    stopAllQuietly()
   }
 }

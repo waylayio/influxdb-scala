@@ -28,9 +28,12 @@ lazy val root = (project in file("."))
     name := "influxdb-scala",
     scalaVersion := "2.11.8",
 
+    // Be wary of adding extra dependencies (especially the Waylay common dependencies)
+    // They may pull in a newer Netty version, breaking play-ws
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % playVersion, // TODO keep up to date with play version
+      "com.typesafe.play" %% "play-json" % playVersion,
       "com.typesafe.play" %% "play-ws" % playVersion, // pulls in the whole of play
+      //"com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
 
@@ -38,7 +41,13 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % logbackVersion % Test,
       "org.specs2" %% "specs2-core" % specs2Version % Test,
       "org.specs2" %% "specs2-junit" % specs2Version % Test,
-      "com.whisk" %% "docker-testkit-specs2" % "0.7.0-RC2" % Test
+      "com.whisk" %% "docker-testkit-specs2" % "0.9.0-M5" % Test excludeAll ExclusionRule(organization = "io.netty"),
+
+      // INTEGRATION TESTS
+      // TODO investigate if we can do this with specs2
+      "org.scalatest" %% "scalatest" % "2.2.6" % Test,
+      "com.whisk" %% "docker-testkit-scalatest" % "0.9.0-M5" % Test excludeAll ExclusionRule(organization = "io.netty"),
+      "com.jsuereth" %% "scala-arm" % "1.4" % Test
     ).map(_.excludeAll(libraryExclusions:_*))
   )
   .settings(

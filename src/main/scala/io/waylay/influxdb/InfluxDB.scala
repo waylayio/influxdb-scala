@@ -167,7 +167,11 @@ class InfluxDB(
   private final val baseUrl = s"$schema://$host:$port"
 
   def ping: Future[Version] = {
-    ws.url(baseUrl + "/ping").withRequestTimeout(INFLUX_PING_REQUEST_TIMEOUT).get().map { response =>
+    val req = ws.url(baseUrl + "/ping")
+      .withRequestTimeout(INFLUX_PING_REQUEST_TIMEOUT)
+    logger.debug(s" -> $req")
+    req.get().map { response =>
+      logger.debug("status: " + response.status)
       // make sure we consume the body, could be source of recent blocked influx
       val body = Some(response.body).filter(_.nonEmpty).getOrElse("[empty]")
       val version = response.header("X-Influxdb-Version").get
