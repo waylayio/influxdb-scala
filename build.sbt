@@ -1,3 +1,5 @@
+import ReleaseTransformations._
+import GhPagesKeys._
 
 val playVersion = "2.5.4"
 val slf4jVersion = "1.7.12"
@@ -53,3 +55,38 @@ lazy val root = (project in file("."))
   .settings(
     repoSettings
   )
+
+
+ghpages.settings
+enablePlugins(SiteScaladocPlugin)
+
+val publishScalaDoc = (ref: ProjectRef) => ReleaseStep(
+  action = releaseStepTaskAggregated(GhPagesKeys.pushSite in ref) // publish scaladoc
+)
+
+val runIntegrationTest = (ref: ProjectRef) => ReleaseStep(
+  action = releaseStepTaskAggregated(test in IntegrationTest in ref)
+)
+
+releaseProcess <<= thisProjectRef apply { ref =>
+  import sbtrelease.ReleaseStateTransformations._
+
+  Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
+    runIntegrationTest(ref),
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    publishArtifacts,
+    publishScalaDoc(ref),
+    setNextVersion,
+    commitNextVersion,
+    pushChanges
+  )
+}
+
+git.remoteRepo := "git@github.com:waylayio/influxdb-scala.git"
+
