@@ -1,4 +1,7 @@
-# influxdb-scala [![Build Status](https://travis-ci.org/waylayio/influxdb-scala.svg?branch=master)](https://travis-ci.org/waylayio/influxdb-scala)
+# influxdb-scala
+[![Build Status](https://travis-ci.org/waylayio/influxdb-scala.svg?branch=master)](https://travis-ci.org/waylayio/influxdb-scala)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.waylay.influxdb/influxdb-scala/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.waylay.influxdb/influxdb-scala)
+
 Scala InfluxDB driver
 
 This is our own imlementation that depends on `play-ws` and `play-json`. Not to be confused with the abandonned offical influxdb-scala driver.
