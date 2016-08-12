@@ -15,16 +15,6 @@ lazy val libraryExclusions = Seq(
 lazy val nettyExclusions = Seq("netty-codec", "netty-handler-proxy", "netty-handler", "netty-transport-native-epoll",
   "netty-codec-socks", "netty-codec-http").map(name => ExclusionRule(organization = "io.netty", name = name))
 
-lazy val repoSettings = Seq(
-  publishTo := {
-    val nexus = "https://nexus.waylay.io"
-    if (isSnapshot.value)
-      Some("Waylay snapshot repo" at nexus + "/repository/maven-snapshots")
-    else
-      Some("Waylay releases repo" at nexus + "/repository/maven-releases")
-  }
-)
-
 organization in ThisBuild := "io.waylay.influxdb"
 
 lazy val root = (project in file("."))
@@ -53,9 +43,6 @@ lazy val root = (project in file("."))
       "com.whisk" %% "docker-testkit-scalatest" % "0.9.0-M5" % Test excludeAll(nettyExclusions:_*),
       "com.jsuereth" %% "scala-arm" % "1.4" % Test
     ).map(_.excludeAll(libraryExclusions:_*))
-  )
-  .settings(
-    repoSettings
   )
 
 
@@ -91,4 +78,3 @@ releaseProcess <<= thisProjectRef apply { ref =>
 }
 
 git.remoteRepo := "git@github.com:waylayio/influxdb-scala.git"
-
