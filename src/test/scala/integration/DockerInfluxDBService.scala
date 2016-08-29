@@ -17,7 +17,7 @@ trait DockerInfluxDBService extends DockerKit {
   println(getClass.getSimpleName + "!!!\n" + DefaultDockerClientConfig.createDefaultConfigBuilder().build())
 
 
-  val influxdbContainer = DockerContainer("influxdb:1.0.0-beta3-alpine")
+  val influxdbContainer = DockerContainer("influxdb:1.0.0-rc1-alpine")
     .withPorts(
       DefaultInfluxDBPort -> None,
       DefaultInfluxDBAdminPort -> None
