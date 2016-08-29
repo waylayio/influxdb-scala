@@ -92,6 +92,34 @@ class InfluxDBSpec(environment: Env) extends Specification with DockerInfluxDBSe
       }
     }
 
+    "query measurements" in {
+      withInfluxClient(this){ influxClient =>
+        val points = Seq(
+          IPoint("temperature", Seq("location" -> "room1"), Seq("value" -> IFloat(20)), Instant.ofEpochSecond(0)),
+          IPoint("humidity", Seq("location" -> "room1"), Seq("value" -> IFloat(22)), Instant.ofEpochSecond(60)),
+          IPoint("noise", Seq("location" -> "room1"), Seq("value" -> IFloat(24)), Instant.ofEpochSecond(120)),
+          IPoint("co2", Seq("location" -> "room1"), Seq("value" -> IFloat(26)), Instant.ofEpochSecond(180))
+        )
+
+        Await.result(influxClient.storeAndMakeDbIfNeeded("dbname", points), 5.seconds)
+
+        val query = "show measurements"
+
+        //println(query)
+
+        val data = Await.result(influxClient.query("dbname", query), 5.seconds)
+        data.error must beNone
+        //println(data.results)
+        data.results.get.head.series.get must have size 1
+        data.results.get.head.series.get.head.values.get must be equalTo Seq(
+          Seq(Some(IString("co2"))),
+          Seq(Some(IString("humidity"))),
+          Seq(Some(IString("noise"))),
+          Seq(Some(IString("temperature")))
+        )
+      }
+    }
+
   }
 
 
