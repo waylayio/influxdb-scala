@@ -115,11 +115,12 @@ object InfluxQueryBuilder extends SharedProtocol{
   private def functionToSelect(iFunction: IFunction):String = iFunction match{
     case Count(Left(field)) => s"""COUNT(${escapeValue(field)})"""
     case Count(Right(func)) => s"""COUNT(${functionToSelect(func)})"""
-    case Min(field) => s"""MIN(${escapeValue(field)})"""
-    case Max(field) => s"""MAX(${escapeValue(field)})"""
-    case Mean(field) => s"""MEAN(${escapeValue(field)})"""
-    case Median(field) => s"""MEDIAN(${escapeValue(field)})"""
-    case Distinct(field) => s"""DISTINCT(${escapeValue(field)})"""
+    case Min(field)         => s"""MIN(${escapeValue(field)})"""
+    case Max(field)         => s"""MAX(${escapeValue(field)})"""
+    case Mean(field)        => s"""MEAN(${escapeValue(field)})"""
+    case Median(field)      => s"""MEDIAN(${escapeValue(field)})"""
+    case Distinct(field)    => s"""DISTINCT(${escapeValue(field)})"""
+    case Sum(field)         => s"""SUM(${escapeValue(field)})"""
 
     case other => throw new RuntimeException("not implemented: " + other.toString)
   }

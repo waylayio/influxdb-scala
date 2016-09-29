@@ -6,15 +6,15 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.spotify.docker.client.DefaultDockerClient
 import com.whisk.docker.impl.spotify.SpotifyDockerFactory
-import com.whisk.docker.DockerFactory
 import com.whisk.docker.specs2.DockerTestKit
+import com.whisk.docker.{DockerFactory, DockerKit}
 import integration.DockerInfluxDBService
 import io.waylay.influxdb.Influx.{IFloat, IPoint, IString}
 import io.waylay.influxdb.InfluxDB.Mean
 import io.waylay.influxdb.query.InfluxQueryBuilder
 import io.waylay.influxdb.query.InfluxQueryBuilder.Interval
 import org.asynchttpclient.DefaultAsyncHttpClientConfig
-import org.specs2.mutable.Specification
+import org.specs2.mutable.{BeforeAfter, Specification}
 import org.specs2.specification.core.Env
 import play.api.libs.ws.ahc.AhcWSClient
 
@@ -22,7 +22,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class InfluxDBSpec(environment: Env) extends Specification with DockerInfluxDBService with DockerTestKit {
-
 
   override implicit val dockerFactory: DockerFactory = new SpotifyDockerFactory(DefaultDockerClient.fromEnv().build())
 
@@ -141,5 +140,20 @@ class InfluxDBSpec(environment: Env) extends Specification with DockerInfluxDBSe
       materializer.shutdown()
       Await.result(actorSystem.terminate(), 10.seconds)
     }
+  }
+}
+
+trait MutableDockerTestKit extends BeforeAfter with DockerKit {
+
+  override implicit val dockerFactory: DockerFactory = new SpotifyDockerFactory(DefaultDockerClient.fromEnv().build())
+
+  def before() = {
+    println("!!! starting docker images(s): " + dockerContainers.map(_.image).mkString(", "))
+    startAllOrFail()
+  }
+
+  def after() = {
+    println("!!! stopping docker images(s): " + dockerContainers.map(_.image).mkString(", "))
+    stopAllQuietly()
   }
 }

@@ -5,6 +5,7 @@ val playVersion = "2.5.4"
 val slf4jVersion = "1.7.12"
 val logbackVersion = "1.1.7"
 val specs2Version = "3.7.3"
+val dockerTestkitVersion = "0.9.0-M10"
 
 lazy val libraryExclusions = Seq(
   ExclusionRule("org.slf4j", "slf4j-log4j12"),
@@ -12,8 +13,14 @@ lazy val libraryExclusions = Seq(
   ExclusionRule("org.apache.logging.log4j", "log4j-core")
 )
 
-lazy val nettyExclusions = Seq("netty-codec", "netty-handler-proxy", "netty-handler", "netty-transport-native-epoll",
-  "netty-codec-socks", "netty-codec-http").map(name => ExclusionRule(organization = "io.netty", name = name))
+// we need to stay compatible with play-ws
+lazy val nettyExclusions = Seq(
+  "netty-codec",
+  "netty-handler-proxy",
+  "netty-handler",
+  "netty-transport-native-epoll",
+  "netty-codec-socks",
+  "netty-codec-http").map(name => ExclusionRule(organization = "io.netty", name = name))
 
 organization in ThisBuild := "io.waylay.influxdb"
 
@@ -35,12 +42,13 @@ lazy val root = (project in file("."))
       "ch.qos.logback" % "logback-classic" % logbackVersion % Test,
       "org.specs2" %% "specs2-core" % specs2Version % Test,
       "org.specs2" %% "specs2-junit" % specs2Version % Test,
-      "com.whisk" %% "docker-testkit-specs2" % "0.9.0-M5" % Test excludeAll(nettyExclusions:_*),
+      "com.whisk" %% "docker-testkit-specs2" % dockerTestkitVersion % Test excludeAll(nettyExclusions:_*),
+      "com.whisk" %% "docker-testkit-impl-spotify" % dockerTestkitVersion % Test,
 
       // INTEGRATION TESTS
       // TODO investigate if we can do this with specs2
       "org.scalatest" %% "scalatest" % "2.2.6" % Test,
-      "com.whisk" %% "docker-testkit-scalatest" % "0.9.0-M5" % Test excludeAll(nettyExclusions:_*),
+      "com.whisk" %% "docker-testkit-scalatest" % dockerTestkitVersion % Test excludeAll(nettyExclusions:_*),
       "com.jsuereth" %% "scala-arm" % "1.4" % Test
     ).map(_.excludeAll(libraryExclusions:_*))
   )

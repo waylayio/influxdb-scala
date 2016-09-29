@@ -2,7 +2,7 @@ package io.waylay.influxdb.query
 
 import java.time.Instant
 
-import io.waylay.influxdb.InfluxDB.{Count, Distinct, Duration, Max}
+import io.waylay.influxdb.InfluxDB._
 import io.waylay.influxdb.query.InfluxQueryBuilder.Interval
 import org.specs2.mutable.Specification
 
@@ -71,6 +71,23 @@ class InfluxQueryBuilderSpec extends Specification {
       query must be equalTo """SELECT MAX("value")
                               |FROM "CO2"
                               |WHERE "resource"='Living'
+                              |AND time >= 0ms - 10d
+                              |GROUP BY time(1h)""".stripMargin
+    }
+
+    "group aggregating sum correctly" in {
+      val query = InfluxQueryBuilder.grouped(
+        Sum("value"),
+        "resource" -> "person1",
+        "steps",
+        Duration.hours(1),
+        Interval.relativeTo(Duration.days(10), Instant.ofEpochMilli(0)))
+
+      println(query.replace("\n", " "))
+
+      query must be equalTo """SELECT SUM("value")
+                              |FROM "steps"
+                              |WHERE "resource"='person1'
                               |AND time >= 0ms - 10d
                               |GROUP BY time(1h)""".stripMargin
     }
