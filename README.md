@@ -13,7 +13,7 @@ Add this to your build.sbt
 ```scala
 libraryDependencies ++= Seq(
   // other dependencies here
-  "io.waylay.influxdb" %% "influxdb-scala" % "1.0.5"
+  "io.waylay.influxdb" %% "influxdb-scala" % "1.0.6"
 )
 ```
 
