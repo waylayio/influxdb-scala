@@ -41,7 +41,7 @@ class VersionIntegrationSpec extends FlatSpec with Matchers with ScalaFutures wi
         val host = "localhost" //service.docker.host
         new InfluxDB(wsClient, host, mappedInfluxPort)(dockerExecutionContext).ping
       }.futureValue
-    } shouldBe Right("1.0.1")
+    } shouldBe Right("1.1.1")
   }
 }
 

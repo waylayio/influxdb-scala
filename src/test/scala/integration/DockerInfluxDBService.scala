@@ -9,7 +9,7 @@ trait DockerInfluxDBService extends DockerKit {
   val DefaultInfluxDBAdminPort = 8083
   val DefaultInfluxDBPort = 8086
 
-  val influxdbContainer = DockerContainer("influxdb:1.0-alpine")
+  val influxdbContainer = DockerContainer("influxdb:1.1.1-alpine")
     .withPorts(
       DefaultInfluxDBPort -> None,
       DefaultInfluxDBAdminPort -> None
