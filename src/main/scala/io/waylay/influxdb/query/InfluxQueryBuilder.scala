@@ -123,7 +123,7 @@ object InfluxQueryBuilder extends SharedProtocol{
     case Sum(field)         => s"""SUM(${escapeValue(field)})"""
     case Stddev(field)      => s"""STDDEV(${escapeValue(field)})"""
     case Last(field)        => s"""LAST(${escapeValue(field)})"""
-    case First(field)       => s"""LAST(${escapeValue(field)})"""
+    case First(field)       => s"""FIRST(${escapeValue(field)})"""
     case other => throw new RuntimeException("not implemented: " + other.toString)
   }
 
