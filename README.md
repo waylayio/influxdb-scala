@@ -1,6 +1,6 @@
 # influxdb-scala
 [![Build Status](https://travis-ci.org/waylayio/influxdb-scala.svg?branch=master)](https://travis-ci.org/waylayio/influxdb-scala)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.waylay.influxdb/influxdb-scala/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.waylay.influxdb/influxdb-scala)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.waylay.influxdb/influxdb-scala_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.waylay.influxdb/influxdb-scala_2.11)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2e19cc02e06f4ed4913d7902d719b6e7)](https://www.codacy.com/app/francisdb/influxdb-scala?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=waylayio/influxdb-scala&amp;utm_campaign=Badge_Grade)
 Scala InfluxDB driver
 
