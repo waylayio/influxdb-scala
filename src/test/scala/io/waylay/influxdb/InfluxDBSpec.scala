@@ -13,7 +13,6 @@ import io.waylay.influxdb.Influx.{IFloat, IPoint, IString}
 import io.waylay.influxdb.InfluxDB.Mean
 import io.waylay.influxdb.query.InfluxQueryBuilder
 import io.waylay.influxdb.query.InfluxQueryBuilder.Interval
-import org.asynchttpclient.DefaultAsyncHttpClientConfig
 import org.specs2.mutable.{BeforeAfter, Specification}
 import org.specs2.specification.core.Env
 import play.api.libs.ws.ahc.AhcWSClient
@@ -130,8 +129,7 @@ class InfluxDBSpec(environment: Env) extends Specification with DockerInfluxDBSe
     val ports = Await.result(state.getPorts()(service.dockerExecutor, service.dockerExecutionContext), 5.seconds)
     val mappedInfluxPort = ports(InfluxDB.DEFAULT_PORT)
     val host = "localhost" //state.docker.host
-    val config = new DefaultAsyncHttpClientConfig.Builder().build()
-    val wsClient = new AhcWSClient(config)
+    val wsClient = AhcWSClient()
     try {
       val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)(service.dockerExecutionContext)
       block(influxClient)

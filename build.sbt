@@ -1,11 +1,19 @@
-import ReleaseTransformations._
-import GhPagesKeys._
+import sbt.Keys.{crossScalaVersions, scalacOptions}
 
-val playVersion = "2.5.4"
+val playVersion = "2.6.1"
 val slf4jVersion = "1.7.12"
 val logbackVersion = "1.1.7"
-val specs2Version = "3.7.3"
-val dockerTestkitVersion = "0.9.0-M10"
+val specs2Version = "3.9.2"
+val dockerTestkitVersion = "0.9.4"
+
+val scala2_11 = "2.11.8"
+val scala2_12 = "2.12.1"
+
+scalaVersion := scala2_12
+crossScalaVersions := Seq(scala2_11, scala2_12)
+scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation")
+
+releaseCrossBuild := true
 
 lazy val libraryExclusions = Seq(
   ExclusionRule("org.slf4j", "slf4j-log4j12"),
@@ -27,7 +35,7 @@ organization in ThisBuild := "io.waylay.influxdb"
 lazy val root = (project in file("."))
   .settings(
     name := "influxdb-scala",
-    scalaVersion := "2.11.8",
+
 
     // Be wary of adding extra dependencies (especially the Waylay common dependencies)
     // They may pull in a newer Netty version, breaking play-ws
@@ -47,9 +55,9 @@ lazy val root = (project in file("."))
 
       // INTEGRATION TESTS
       // TODO investigate if we can do this with specs2
-      "org.scalatest" %% "scalatest" % "2.2.6" % Test,
-      "com.whisk" %% "docker-testkit-scalatest" % dockerTestkitVersion % Test excludeAll(nettyExclusions:_*),
-      "com.jsuereth" %% "scala-arm" % "1.4" % Test
+      "com.typesafe.play" %% "play-ahc-ws" % playVersion % Test,
+      "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+      "com.whisk" %% "docker-testkit-scalatest" % dockerTestkitVersion % Test excludeAll(nettyExclusions:_*)
     ).map(_.excludeAll(libraryExclusions:_*))
   )
 
@@ -65,7 +73,7 @@ val runIntegrationTest = (ref: ProjectRef) => ReleaseStep(
   action = releaseStepTaskAggregated(test in IntegrationTest in ref)
 )
 
-releaseProcess <<= thisProjectRef apply { ref =>
+releaseProcess := {
   import sbtrelease.ReleaseStateTransformations._
 
   Seq[ReleaseStep](
@@ -73,12 +81,12 @@ releaseProcess <<= thisProjectRef apply { ref =>
     inquireVersions,
     runClean,
     runTest,
-    runIntegrationTest(ref),
+    runIntegrationTest(thisProjectRef.value),
     setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
     publishArtifacts,
-    publishScalaDoc(ref),
+    publishScalaDoc(thisProjectRef.value),
     setNextVersion,
     commitNextVersion,
     pushChanges
