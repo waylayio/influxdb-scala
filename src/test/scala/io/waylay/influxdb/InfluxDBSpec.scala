@@ -14,18 +14,16 @@ import io.waylay.influxdb.Influx.{IFloat, IPoint, IString}
 import io.waylay.influxdb.InfluxDB.Mean
 import io.waylay.influxdb.query.InfluxQueryBuilder
 import io.waylay.influxdb.query.InfluxQueryBuilder.Interval
+import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mutable.{BeforeAfter, Specification}
-import org.specs2.specification.core.Env
 import play.api.libs.ws.ahc.AhcWSClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class InfluxDBSpec(environment: Env) extends Specification with DockerInfluxDBService with DockerTestKit {
+class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with DockerInfluxDBService with DockerTestKit {
 
   override implicit val dockerFactory: DockerFactory = new SpotifyDockerFactory(DefaultDockerClient.fromEnv().build())
-
-  implicit val ee = environment.executionEnv
 
   "then influxdb client" should{
 
@@ -40,22 +38,20 @@ class InfluxDBSpec(environment: Env) extends Specification with DockerInfluxDBSe
     "store and query data" in {
       withInfluxClient(this){ influxClient =>
         val points = Seq(
-          IPoint("temperature", Seq("location" -> "room1"), Seq("value" -> IFloat(20.3)), Instant.now())
+          IPoint("temperature", Seq("location" -> "room1"), Seq("value" -> IFloat(20.3)), Instant.now()),
+          // 2 values
+          IPoint("indoor", Seq("location" -> "room2", "building" -> "A"), Seq("temperature" -> IFloat(19.3), "humidity" -> IFloat(35.1)), Instant.now())
         )
 
         val query = InfluxQueryBuilder.simple(Seq("value"), "location" -> "room1", "temperature")
 
         Await.result(influxClient.storeAndMakeDbIfNeeded("dbname", points), 5.seconds)
-        // TODO why do we need this eventually? Is influx storage async? And whys so slow?
-        eventually(40, 250.millis){
-          val data = Await.result(influxClient.query("dbname", query), 5.seconds)
 
-          //println(data)
+        val data = Await.result(influxClient.query("dbname", query), 5.seconds)
 
-          (data.error must beNone) and
-            (data.results.get.head.series.get must have size 1) and
-            (data.results.get.head.series.get.head.name must be equalTo "temperature")
-        }
+        (data.error must beNone) and
+          (data.results.get.head.series.get must have size 1) and
+          (data.results.get.head.series.get.head.name must be equalTo "temperature")
       }
     }
 
@@ -100,13 +96,13 @@ class InfluxDBSpec(environment: Env) extends Specification with DockerInfluxDBSe
           IPoint("co2", Seq("location" -> "room1"), Seq("value" -> IFloat(26)), Instant.ofEpochSecond(180))
         )
 
-        Await.result(influxClient.storeAndMakeDbIfNeeded("dbname", points), 5.seconds)
+        Await.result(influxClient.storeAndMakeDbIfNeeded("testdb2", points), 5.seconds)
 
         val query = "show measurements"
 
         //println(query)
 
-        val data = Await.result(influxClient.query("dbname", query), 5.seconds)
+        val data = Await.result(influxClient.query("testdb2", query), 5.seconds)
         data.error must beNone
         //println(data.results)
         data.results.get.head.series.get must have size 1
