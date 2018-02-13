@@ -44,10 +44,10 @@ private[influxdb] object WriteProtocol extends SharedProtocol{
           case IBoolean(value) => value.toString
           case IString(value) => escapeValue(value)
         }
-        " " + escapeTag(key) + "=" + stringValue
+        escapeTag(key) + "=" + stringValue
       }.mkString(",")
       val timestamp = applyPrecision(point.timestamp)
-      s"""$measurementName$tags$fields $timestamp"""
+      s"""$measurementName$tags $fields $timestamp"""
     }
     lines.mkString("\n")
   }

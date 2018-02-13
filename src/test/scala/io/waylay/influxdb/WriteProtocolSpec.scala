@@ -98,5 +98,18 @@ class WriteProtocolSpec extends Specification {
           |temp,tag=test value="high" 2000""".stripMargin
     }
 
+    "handle multiple fields" in {
+      val myValue = 21d
+
+      val dataLine = WriteProtocol.write(TimeUnit.MILLISECONDS,
+        IPoint("temp", Seq("resource" -> "test"),
+          Seq("value1" -> IString("foo bar"), "value2" -> IInteger(21), "value3" -> IFloat(myValue)),
+          Instant.ofEpochSecond(1)
+        )
+      )
+
+      dataLine must be equalTo """temp,resource=test value1="foo bar",value2=21i,value3=21.0 1000"""
+    }
+
   }
 }
