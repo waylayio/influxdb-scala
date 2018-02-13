@@ -5,6 +5,7 @@ import java.time.Instant
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.spotify.docker.client.DefaultDockerClient
+import com.typesafe.config.ConfigFactory
 import com.whisk.docker.impl.spotify.SpotifyDockerFactory
 import com.whisk.docker.specs2.DockerTestKit
 import com.whisk.docker.{DockerFactory, DockerKit}
@@ -122,7 +123,8 @@ class InfluxDBSpec(environment: Env) extends Specification with DockerInfluxDBSe
 
 
   def withInfluxClient[T](service:DockerInfluxDBService)(block:InfluxDB => T) = {
-    implicit val actorSystem = ActorSystem()
+    val classloader = getClass.getClassLoader
+    implicit val actorSystem = ActorSystem("test", ConfigFactory.load(classloader), classloader)
     implicit val materializer = ActorMaterializer()
     val state = service.getContainerState(service.influxdbContainer)
     state.isReady() must beTrue.await

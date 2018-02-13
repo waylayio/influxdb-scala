@@ -27,7 +27,7 @@ class VersionIntegrationSpec extends FlatSpec with Matchers with ScalaFutures
 
   "Getting the influxDB version" should "return version" in {
     withInfluxClient(this) { influxClient =>
-      influxClient.ping.futureValue shouldBe "1.1.1"
+      influxClient.ping.futureValue shouldBe "1.3.9"
     }
   }
 
