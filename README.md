@@ -13,9 +13,11 @@ Add this to your build.sbt
 ```scala
 libraryDependencies ++= Seq(
   // other dependencies here
-  "io.waylay.influxdb" %% "influxdb-scala" % "1.0.6"
+  "io.waylay.influxdb" %% "influxdb-scala" % "2.0.1"
 )
 ```
+
+Some example usage code is available [in the tests](src/test/scala/io/waylay/influxdb/InfluxDBSpec.scala)
 
 snapshots are available at: `https://oss.sonatype.org/content/repositories/snapshots`
 
