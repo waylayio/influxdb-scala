@@ -58,6 +58,21 @@ class InfluxQueryBuilderSpec extends Specification {
                               |GROUP BY time(1h)""".stripMargin
     }
 
+    "work with multiple groups" in {
+      val query = InfluxQueryBuilder.groupedMultiple(
+        Seq(Count(Distinct("value")), Max("value")),
+        "resource" -> "Living",
+        "CO2",
+        Duration.hours(1),
+        Interval.relativeToNow(Duration.days(7)))
+
+      query must be equalTo """SELECT COUNT(DISTINCT("value")), MAX("value")
+                              |FROM "CO2"
+                              |WHERE "resource"='Living'
+                              |AND time >= now() - 7d
+                              |GROUP BY time(1h)""".stripMargin
+    }
+
     "apply the where time clause correctly" in {
       val query = InfluxQueryBuilder.grouped(
         Max("value"),
