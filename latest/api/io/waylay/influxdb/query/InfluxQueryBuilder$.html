@@ -500,10 +500,27 @@ If the string contains a double-quote, it must be escaped with a backslash, e.g.
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">grouped</span><span class="params">(<span name="func">func: <a href="../InfluxDB$$IFunction.html" class="extype" name="io.waylay.influxdb.InfluxDB.IFunction">IFunction</a></span>, <span name="tagSelector">tagSelector: (<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)</span>, <span name="measurement">measurement: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="grouping">grouping: <a href="../InfluxDB$$Duration.html" class="extype" name="io.waylay.influxdb.InfluxDB.Duration">Duration</a></span>, <span name="interval">interval: <a href="InfluxQueryBuilder$$Interval.html" class="extype" name="io.waylay.influxdb.query.InfluxQueryBuilder.Interval">Interval</a> = <span class="symbol"><span class="name"><a href="InfluxQueryBuilder$$Interval$.html">Interval.beginningOfTimeUntilNow</a></span></span></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Long">Long</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+        <span class="name">grouped</span><span class="params">(<span name="func">func: <a href="../InfluxDB$$IFunction.html" class="extype" name="io.waylay.influxdb.InfluxDB.IFunction">IFunction</a></span>, <span name="tagSelector">tagSelector: (<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)</span>, <span name="measurement">measurement: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="grouping">grouping: <a href="../InfluxDB$$Duration.html" class="extype" name="io.waylay.influxdb.InfluxDB.Duration">Duration</a></span>, <span name="interval">interval: <a href="InfluxQueryBuilder$$Interval.html" class="extype" name="io.waylay.influxdb.query.InfluxQueryBuilder.Interval">Interval</a> = <span class="symbol"><span class="name"><a href="InfluxQueryBuilder$$Interval$.html">Interval.beginningOfTimeUntilNow</a></span></span></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Long">Long</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
+    </li><li name="io.waylay.influxdb.query.InfluxQueryBuilder#groupedMultiple" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="groupedMultiple(funcs:Seq[io.waylay.influxdb.InfluxDB.IFunction],tagSelector:(String,String),measurement:String,grouping:io.waylay.influxdb.InfluxDB.Duration,interval:io.waylay.influxdb.query.InfluxQueryBuilder.Interval,limit:Option[Long]):String"></a><a id="groupedMultiple(Seq[IFunction],(String,String),String,Duration,Interval,Option[Long]):String"></a>
+      <span class="permalink">
+      <a href="../../../../io/waylay/influxdb/query/InfluxQueryBuilder$.html#groupedMultiple(funcs:Seq[io.waylay.influxdb.InfluxDB.IFunction],tagSelector:(String,String),measurement:String,grouping:io.waylay.influxdb.InfluxDB.Duration,interval:io.waylay.influxdb.query.InfluxQueryBuilder.Interval,limit:Option[Long]):String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">groupedMultiple</span><span class="params">(<span name="funcs">funcs: <span class="extype" name="scala.Seq">Seq</span>[<a href="../InfluxDB$$IFunction.html" class="extype" name="io.waylay.influxdb.InfluxDB.IFunction">IFunction</a>]</span>, <span name="tagSelector">tagSelector: (<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)</span>, <span name="measurement">measurement: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="grouping">grouping: <a href="../InfluxDB$$Duration.html" class="extype" name="io.waylay.influxdb.InfluxDB.Duration">Duration</a></span>, <span name="interval">interval: <a href="InfluxQueryBuilder$$Interval.html" class="extype" name="io.waylay.influxdb.query.InfluxQueryBuilder.Interval">Interval</a> = <span class="symbol"><span class="name"><a href="InfluxQueryBuilder$$Interval$.html">Interval.beginningOfTimeUntilNow</a></span></span></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Long">Long</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">Variation of grouped that can take multiple IFunctions
+</p>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
