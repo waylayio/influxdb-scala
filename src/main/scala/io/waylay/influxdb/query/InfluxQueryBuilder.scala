@@ -59,13 +59,29 @@ object InfluxQueryBuilder extends SharedProtocol{
     grouping: Duration,
     interval: Interval = Interval.beginningOfTimeUntilNow,
     limit: Option[Long] = None
-  ) = {
+  ): String = groupedMultiple(Seq(func), tagSelector, measurement, grouping, interval, limit)
+
+  /**
+    * Variation of grouped that can take multiple IFunctions
+    */
+  def groupedMultiple(
+    funcs: Seq[IFunction],
+    tagSelector: (String, String),
+    measurement: String,
+    grouping: Duration,
+    interval: Interval = Interval.beginningOfTimeUntilNow,
+    limit: Option[Long] = None
+  ): String = {
+
+    if (funcs.isEmpty) {
+      throw new IllegalArgumentException("At least one function must be supplied")
+    }
 
     val timeWhere = instantToWhereExpression(interval)
     // TODO validate that timeWhere is not None?
 
     s"""
-       |SELECT ${functionToSelect(func)}
+       |SELECT ${funcs.map(functionToSelect).mkString(", ")}
        |FROM ${escapeValue(measurement)}
        |WHERE ${escapeValue(tagSelector._1)}=${escapeStringLiteral(tagSelector._2)}
        |${timeWhere.map("AND " + _).getOrElse("")}
