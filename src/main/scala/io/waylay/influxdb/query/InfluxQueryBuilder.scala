@@ -2,8 +2,9 @@ package io.waylay.influxdb.query
 
 import java.time.Instant
 
-import io.waylay.influxdb.{SharedProtocol, InfluxDB}
+import io.waylay.influxdb.{InfluxDB, SharedProtocol}
 import io.waylay.influxdb.InfluxDB._
+import io.waylay.influxdb.query.InfluxQueryBuilder.Order.{Ascending, Descending}
 
 object InfluxQueryBuilder extends SharedProtocol{
 
@@ -13,7 +14,13 @@ object InfluxQueryBuilder extends SharedProtocol{
   case class Exact(instant: Instant) extends IInstant
   case class RelativeTo(to: IInstant = Now, timeToGoBack: Duration) extends IInstant
 
+  sealed trait Order
 
+  object Order {
+    case object Ascending extends Order
+    case object Descending extends Order
+    val defaultOrder = Ascending
+  }
 
   /**
    * If start and end times aren’t set they will default to beginning of time until now, respectively.
@@ -39,7 +46,7 @@ object InfluxQueryBuilder extends SharedProtocol{
 
   import InfluxDB._
 
-  def simple(fields: Seq[String], tagSelector: (String, String), measurement: String, interval: Interval = Interval.beginningOfTimeUntilNow) = {
+  def simple(fields: Seq[String], tagSelector: (String, String), measurement: String, interval: Interval = Interval.beginningOfTimeUntilNow, order: Order = Order.defaultOrder) = {
     val selects = fields.map(field => escapeValue(field)).mkString(", ")
 
     val timeWhere = instantToWhereExpression(interval)
@@ -49,6 +56,7 @@ object InfluxQueryBuilder extends SharedProtocol{
        |FROM ${escapeValue(measurement)}
        |WHERE ${escapeValue(tagSelector._1)}=${escapeStringLiteral(tagSelector._2)}
        |${timeWhere.map("AND " + _).getOrElse("")}
+       |${toOrderClause(order)}
        |""".stripMargin.trim
   }
 
@@ -120,6 +128,13 @@ object InfluxQueryBuilder extends SharedProtocol{
     "'" + tag.replace("'","\'") + "'"
   }
 
+  private def toOrderClause(order: Order) = {
+    val orderDirective = order match {
+      case Ascending => "ASC"
+      case Descending => "DESC"
+    }
+    s"ORDER BY time $orderDirective"
+  }
 
 
   private def instantToExpression(instant: IInstant):String = instant match {
