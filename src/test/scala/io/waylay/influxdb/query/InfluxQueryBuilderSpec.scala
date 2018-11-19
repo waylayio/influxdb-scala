@@ -3,7 +3,7 @@ package io.waylay.influxdb.query
 import java.time.Instant
 
 import io.waylay.influxdb.InfluxDB._
-import io.waylay.influxdb.query.InfluxQueryBuilder.Interval
+import io.waylay.influxdb.query.InfluxQueryBuilder.{Interval, Order}
 import org.specs2.mutable.Specification
 
 class InfluxQueryBuilderSpec extends Specification {
@@ -23,7 +23,8 @@ class InfluxQueryBuilderSpec extends Specification {
       query must be equalTo """SELECT "value"
                               |FROM "CO2"
                               |WHERE "resource"='Living'
-                              |AND time >= 0ms""".stripMargin
+                              |AND time >= 0ms
+                              |ORDER BY time ASC""".stripMargin
     }
 
     "apply time interval correctly" in {
@@ -38,7 +39,23 @@ class InfluxQueryBuilderSpec extends Specification {
       query must be equalTo """SELECT "value"
                               |FROM "CO2"
                               |WHERE "resource"='Living'
-                              |AND time >= 0ms AND time < 1000ms""".stripMargin
+                              |AND time >= 0ms AND time < 1000ms
+                              |ORDER BY time ASC""".stripMargin
+    }
+
+    "apply ordering correctly" in {
+      val query = InfluxQueryBuilder.simple(
+        Seq("value"),
+        "resource" -> "Living",
+        "CO2",
+        Interval.from(Instant.ofEpochMilli(0)),
+        order = Order.Descending)
+
+      query must be equalTo """SELECT "value"
+                              |FROM "CO2"
+                              |WHERE "resource"='Living'
+                              |AND time >= 0ms
+                              |ORDER BY time DESC""".stripMargin
     }
 
     "work grouped" in {
