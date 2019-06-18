@@ -182,7 +182,7 @@ class InfluxDB(
 
   def stats: Future[Results] = {
     authenticatedUrlFor(Query)
-      .withQueryString("q" -> "SHOW STATS")
+      .addQueryStringParameters("q" -> "SHOW STATS")
       .get().flatMap{ response =>
 
       logger.debug("status: " + response.status)
@@ -206,7 +206,7 @@ class InfluxDB(
 
   def diagnostics: Future[Results] = {
     authenticatedUrlFor(Query)
-      .withQueryString("q" -> "SHOW DIAGNOSTICS")
+      .addQueryStringParameters("q" -> "SHOW DIAGNOSTICS")
       .get().flatMap { response =>
 
       logger.trace("diagnostics: " + response.status)
@@ -237,8 +237,8 @@ class InfluxDB(
     ).flatten
 
     val req = authenticatedUrlForDatabase(databaseName, Query)
-      .withQueryString("q" -> query)
-      .withQueryString(extraQueryString:_*)
+      .addQueryStringParameters("q" -> query)
+      .addQueryStringParameters(extraQueryString:_*)
 
     logger.debug(s" -> $req")
     req.get().flatMap{ response =>
@@ -306,9 +306,9 @@ class InfluxDB(
     val q2 = s"""ALTER RETENTION POLICY default ON "$databaseName" DURATION $defaultRetention DEFAULT"""
     val combinedQuery = q + ";" + q2
     val url = s"$baseUrl/query"
-    authenticatedUrl(url).withQueryString("q" -> combinedQuery).get().flatMap { response =>
+    authenticatedUrl(url).addQueryStringParameters("q" -> combinedQuery).get().flatMap { response =>
       logger.info("status: " + response.status)
-      logger.debug(response.allHeaders.mkString("\n"))
+      logger.debug(response.headers.mkString("\n"))
       logger.debug(response.body)
 
       if(response.status != 200){
@@ -326,7 +326,7 @@ class InfluxDB(
     }
 
     val url = s"$baseUrl/${method.endpoint}"
-    authenticatedUrl(url).withQueryString(
+    authenticatedUrl(url).addQueryStringParameters(
       "db" -> databaseName,
       "precision" -> influxPrecision
     )

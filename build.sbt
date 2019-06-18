@@ -1,13 +1,15 @@
 import sbt.Keys.{crossScalaVersions, scalacOptions}
 
-val playVersion = "2.6.11"
+val playJsonVersion = "2.7.2"
+val playVersion = "2.7.1"
+val playAhcWsVersion = "2.0.3"
 val slf4jVersion = "1.7.12"
 val logbackVersion = "1.1.7"
 val specs2Version = "3.9.2"
-val dockerTestkitVersion = "0.9.4"
+val dockerTestkitVersion = "0.9.8"
 
-val scala2_11 = "2.11.11"
-val scala2_12 = "2.12.4"
+val scala2_11 = "2.11.12"
+val scala2_12 = "2.12.8"
 
 scalaVersion := scala2_12
 crossScalaVersions := Seq(scala2_11, scala2_12)
@@ -40,7 +42,7 @@ lazy val root = (project in file("."))
     // Be wary of adding extra dependencies (especially the Waylay common dependencies)
     // They may pull in a newer Netty version, breaking play-ws
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.6.8",
+      "com.typesafe.play" %% "play-json" % playJsonVersion,
       "com.typesafe.play" %% "play-ws" % playVersion, // pulls in the whole of play
       //"com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
@@ -55,6 +57,7 @@ lazy val root = (project in file("."))
 
       // INTEGRATION TESTS
       // TODO investigate if we can do this with specs2
+      "com.typesafe.play" %% "play-ahc-ws-standalone" % playAhcWsVersion % Test,
       "com.typesafe.play" %% "play-ahc-ws" % playVersion % Test,
       "org.scalatest" %% "scalatest" % "3.0.1" % Test,
       "com.whisk" %% "docker-testkit-scalatest" % dockerTestkitVersion % Test excludeAll(nettyExclusions:_*)
