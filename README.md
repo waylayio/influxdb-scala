@@ -4,7 +4,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2e19cc02e06f4ed4913d7902d719b6e7)](https://www.codacy.com/app/francisdb/influxdb-scala?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=waylayio/influxdb-scala&amp;utm_campaign=Badge_Grade)
 Scala InfluxDB driver
 
-This is our own implementation that depends on `play-ws` and `play-json`. Not to be confused with the abandonned offical influxdb-scala driver.
+This is our own implementation that depends on `play-ws` and `play-json`. Not to be confused with the abandoned offical influxdb-scala driver.
 
 ## Usage
 
