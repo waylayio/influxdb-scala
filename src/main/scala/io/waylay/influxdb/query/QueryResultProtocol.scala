@@ -3,10 +3,9 @@ package io.waylay.influxdb.query
 import io.waylay.influxdb.Influx._
 import play.api.libs.json._
 
+object QueryResultProtocol {
 
-object QueryResultProtocol{
-
-  implicit val fieldValueReads = new Reads[IFieldValue]{
+  implicit val fieldValueReads = new Reads[IFieldValue] {
 
     override def reads(json: JsValue): JsResult[IFieldValue] = json match {
       // writing ints where previousy we wrote doubles is not possible
@@ -15,7 +14,7 @@ object QueryResultProtocol{
       //        case n: JsNumber if n.value.isValidLong =>
       //          JsSuccess(IInteger(n.value.longValue()))
       case n: JsNumber =>
-        JsSuccess(IFloat(n.value.doubleValue()))
+        JsSuccess(IFloat(n.value.doubleValue))
       case s: JsString =>
         JsSuccess(IString(s.value))
       case b: JsBoolean =>
@@ -27,10 +26,11 @@ object QueryResultProtocol{
 
   // not sure why we need this...
   implicit val optionFieldValueReads = new Reads[Option[IFieldValue]] {
-    override def reads(json: JsValue): JsResult[Option[IFieldValue]] = json match {
-      case JsNull => JsSuccess(None)
-      case other => fieldValueReads.reads(other).map(Some(_))
-    }
+    override def reads(json: JsValue): JsResult[Option[IFieldValue]] =
+      json match {
+        case JsNull => JsSuccess(None)
+        case other  => fieldValueReads.reads(other).map(Some(_))
+      }
   }
 
   implicit val serieReads = Json.reads[Serie]

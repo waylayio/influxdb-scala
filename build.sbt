@@ -1,21 +1,25 @@
 import sbt.Keys.{crossScalaVersions, scalacOptions}
 
-val playJsonVersion = "2.7.2"
-val playVersion = "2.7.1"
-val playAhcWsVersion = "2.0.3"
+val playJsonVersion = "2.7.4"
+val playVersion = "2.7.3" // test only
+val playWsVersion = "2.0.7"
 val slf4jVersion = "1.7.12"
 val logbackVersion = "1.1.7"
-val specs2Version = "3.9.2"
-val dockerTestkitVersion = "0.9.8"
+val specs2Version = "4.8.1"
+val dockerTestkitVersion = "0.10.0-beta8"
 
-val scala2_11 = "2.11.12"
-val scala2_12 = "2.12.8"
+val scala2_12 = "2.12.10"
+val scala2_13 = "2.13.1"
 
-scalaVersion := scala2_12
-crossScalaVersions := Seq(scala2_11, scala2_12)
-scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation")
+scalaVersion := scala2_13
+crossScalaVersions := Seq(scala2_12, scala2_13)
 
 releaseCrossBuild := true
+
+scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation")
+
+// we need both Test and IntegrationTest scopes for a correct pom, see https://github.com/sbt/sbt/issues/1380
+val TestAndIntegrationTest = IntegrationTest.name + "," + Test.name
 
 lazy val libraryExclusions = Seq(
   ExclusionRule("org.slf4j", "slf4j-log4j12"),
@@ -30,49 +34,44 @@ lazy val nettyExclusions = Seq(
   "netty-handler",
   "netty-transport-native-epoll",
   "netty-codec-socks",
-  "netty-codec-http").map(name => ExclusionRule(organization = "io.netty", name = name))
+  "netty-codec-http"
+).map(name => ExclusionRule(organization = "io.netty", name = name))
 
 organization in ThisBuild := "io.waylay.influxdb"
 
 lazy val root = (project in file("."))
   .settings(
     name := "influxdb-scala",
-
-
-    // Be wary of adding extra dependencies (especially the Waylay common dependencies)
-    // They may pull in a newer Netty version, breaking play-ws
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "com.typesafe.play" %% "play-ws" % playVersion, // pulls in the whole of play
+      "com.typesafe.play" %% "play-ws-standalone" % playWsVersion,
+      "com.typesafe.play" %% "play-ws-standalone-json" % playWsVersion,
       //"com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
       "org.slf4j" % "slf4j-api" % slf4jVersion,
       "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
-
       // TEST
-      "ch.qos.logback" % "logback-classic" % logbackVersion % Test,
-      "org.specs2" %% "specs2-core" % specs2Version % Test,
-      "org.specs2" %% "specs2-junit" % specs2Version % Test,
-      "com.whisk" %% "docker-testkit-specs2" % dockerTestkitVersion % Test excludeAll(nettyExclusions:_*),
-      "com.whisk" %% "docker-testkit-impl-spotify" % dockerTestkitVersion % Test,
-
-      // INTEGRATION TESTS
-      // TODO investigate if we can do this with specs2
-      "com.typesafe.play" %% "play-ahc-ws-standalone" % playAhcWsVersion % Test,
-      "com.typesafe.play" %% "play-ahc-ws" % playVersion % Test,
-      "org.scalatest" %% "scalatest" % "3.0.1" % Test,
-      "com.whisk" %% "docker-testkit-scalatest" % dockerTestkitVersion % Test excludeAll(nettyExclusions:_*)
-    ).map(_.excludeAll(libraryExclusions:_*))
+      "ch.qos.logback" % "logback-classic" % logbackVersion % TestAndIntegrationTest,
+      "org.specs2" %% "specs2-core" % specs2Version % TestAndIntegrationTest,
+      "org.specs2" %% "specs2-junit" % specs2Version % TestAndIntegrationTest,
+      //"com.typesafe.play" %% "play-ahc-ws" % playVersion % TestAndIntegrationTest, // neede for play-mockws
+      "com.typesafe.play" %% "play-ahc-ws-standalone" % playWsVersion % TestAndIntegrationTest,
+      "com.whisk" %% "docker-testkit-scalatest" % dockerTestkitVersion % TestAndIntegrationTest excludeAll (nettyExclusions: _*)
+    ).map(_.excludeAll(libraryExclusions: _*))
   )
+  .configs(IntegrationTest)
+  .settings(Defaults.itSettings: _*)
 
 enablePlugins(GhpagesPlugin)
 enablePlugins(SiteScaladocPlugin)
 
-val publishScalaDoc = (ref: ProjectRef) => ReleaseStep(
-  action = releaseStepTaskAggregated(ghpagesPushSite in ref) // publish scaladoc
+val publishScalaDoc = (ref: ProjectRef) =>
+  ReleaseStep(
+    action = releaseStepTaskAggregated(ghpagesPushSite in ref) // publish scaladoc
 )
 
-val runIntegrationTest = (ref: ProjectRef) => ReleaseStep(
-  action = releaseStepTaskAggregated(test in IntegrationTest in ref)
+val runIntegrationTest = (ref: ProjectRef) =>
+  ReleaseStep(
+    action = releaseStepTaskAggregated(test in IntegrationTest in ref)
 )
 
 releaseProcess := {

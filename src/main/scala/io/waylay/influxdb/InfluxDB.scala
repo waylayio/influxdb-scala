@@ -3,8 +3,11 @@ package io.waylay.influxdb
 import io.waylay.influxdb.Influx._
 import io.waylay.influxdb.query.QueryResultProtocol
 import org.slf4j.LoggerFactory
-import play.api.libs.json.Json
-import play.api.libs.ws.{WSAuthScheme, WSClient}
+import play.api.libs.json.{JsValue, Json}
+import play.api.libs.ws.{StandaloneWSClient, StandaloneWSRequest, StandaloneWSResponse, WSAuthScheme}
+import play.api.libs.ws.DefaultBodyWritables._
+import play.api.libs.ws.JsonBodyWritables._
+import play.api.libs.ws.JsonBodyReadables._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
@@ -152,7 +155,7 @@ object InfluxDB{
 }
 
 class InfluxDB(
-  ws: WSClient,
+  ws: StandaloneWSClient,
   host: String = "localhost",
   port: Int = InfluxDB.DEFAULT_PORT,
   username: String = "root",
@@ -188,9 +191,9 @@ class InfluxDB(
       logger.debug("status: " + response.status)
       response.status match {
         case 200 => // ok
-          logger.trace(s"got data\n${Json.prettyPrint(response.json)}")
+          logger.trace(s"got data\n${Json.prettyPrint(response.body[JsValue])}")
           import QueryResultProtocol._
-          val results = response.json.as[Results]
+          val results = response.body[JsValue].as[Results]
           if(results.hasErrors){
             // possible errors:
             // too many points in the group by interval. maybe you forgot to specify a where time clause?
@@ -212,9 +215,9 @@ class InfluxDB(
       logger.trace("diagnostics: " + response.status)
       response.status match {
         case 200 => // ok
-          logger.trace(s"got data\n${Json.prettyPrint(response.json)}")
+          logger.trace(s"got data\n${Json.prettyPrint(response.body[JsValue])}")
           import QueryResultProtocol._
-          val results = response.json.as[Results]
+          val results = response.body[JsValue].as[Results]
           if (results.hasErrors) {
             // possible errors:
             // too many points in the group by interval. maybe you forgot to specify a where time clause?
@@ -247,9 +250,9 @@ class InfluxDB(
         case 404 =>
           Future.failed(new RuntimeException(s"Got status ${response.status} with body: ${response.body}"))
         case 200 => // ok
-          logger.debug(s"got data\n${Json.prettyPrint(response.json)}")
+          logger.debug(s"got data\n${Json.prettyPrint(response.body[JsValue])}")
           import QueryResultProtocol._
-          val results = response.json.as[Results]
+          val results = response.body[JsValue].as[Results]
           if(results.hasDatabaseNotFoundError){
             Future.successful(Results(Some(Seq.empty), None))
           }else if(results.hasErrors){

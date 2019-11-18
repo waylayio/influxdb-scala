@@ -1,13 +1,18 @@
 sudo: true
 services:
 - docker
+
 language: scala
 scala:
-- 2.12.4
+- 2.12.10
+- 2.13.1
+
 jdk:
-- oraclejdk8
+- openjdk11
+
 script:
 - sbt ++$TRAVIS_SCALA_VERSION clean test
+
 after_success:
 - '[[ $TRAVIS_BRANCH == "master" ]] && { sbt publish; };'
 env:
