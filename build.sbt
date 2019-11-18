@@ -55,7 +55,7 @@ lazy val root = (project in file("."))
       "org.specs2" %% "specs2-junit" % specs2Version % TestAndIntegrationTest,
       //"com.typesafe.play" %% "play-ahc-ws" % playVersion % TestAndIntegrationTest, // neede for play-mockws
       "com.typesafe.play" %% "play-ahc-ws-standalone" % playWsVersion % TestAndIntegrationTest,
-      "com.whisk" %% "docker-testkit-scalatest" % dockerTestkitVersion % TestAndIntegrationTest excludeAll (nettyExclusions: _*)
+      "com.whisk" %% "docker-testkit-core" % dockerTestkitVersion % TestAndIntegrationTest excludeAll (nettyExclusions: _*)
     ).map(_.excludeAll(libraryExclusions: _*))
   )
   .configs(IntegrationTest)
