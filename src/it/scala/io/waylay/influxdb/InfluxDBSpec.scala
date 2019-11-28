@@ -3,7 +3,7 @@ package io.waylay.influxdb
 import java.time.Instant
 
 import io.waylay.influxdb.Influx.{IFloat, IPoint, IString}
-import io.waylay.influxdb.InfluxDB.Mean
+import io.waylay.influxdb.InfluxDB.{GT, IFieldFilter, LT, Mean, OR}
 import io.waylay.influxdb.query.InfluxQueryBuilder
 import io.waylay.influxdb.query.InfluxQueryBuilder.Interval
 import org.specs2.concurrent.ExecutionEnv
@@ -114,6 +114,74 @@ class InfluxDBSpec(implicit ee: ExecutionEnv)
       data.results.get.head.series.get must have size 1
       data.results.get.head.series.get.head.values.get must be equalTo Seq(
         Seq(Some(IString("1970-01-01T00:00:00Z")), Some(IFloat(21.0))),
+        Seq(Some(IString("1970-01-01T00:02:00Z")), Some(IFloat(25.0)))
+      )
+    }
+    "query aggregated data with filter" in {
+
+      val points = Seq(
+        IPoint(
+          "temperature",
+          Seq("location" -> "roomFilterAggregated"),
+          Seq("value" -> IFloat(20)),
+          Instant.ofEpochSecond(0)
+        ),
+        IPoint(
+          "temperature",
+          Seq("location" -> "roomFilterAggregated"),
+          Seq("value" -> IFloat(20)),
+          Instant.ofEpochSecond(30)
+        ),
+        IPoint(
+          "temperature",
+          Seq("location" -> "roomFilterAggregated"),
+          Seq("value" -> IFloat(22)),
+          Instant.ofEpochSecond(60)
+        ),
+        IPoint(
+          "temperature",
+          Seq("location" -> "roomFilterAggregated"),
+          Seq("value" -> IFloat(24)),
+          Instant.ofEpochSecond(120)
+        ),
+        IPoint(
+          "temperature",
+          Seq("location" -> "roomFilterAggregated"),
+          Seq("value" -> IFloat(23)),
+          Instant.ofEpochSecond(140)
+        ),
+        IPoint(
+          "temperature",
+          Seq("location" -> "roomFilterAggregated"),
+          Seq("value" -> IFloat(26)),
+          Instant.ofEpochSecond(180)
+        )
+      )
+
+      val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)
+      Await.result(
+        influxClient.storeAndMakeDbIfNeeded("dbname", points),
+        5.seconds
+      )
+
+      val query = InfluxQueryBuilder.grouped(
+        Mean("value"),
+        "location" -> "roomFilterAggregated",
+        "temperature",
+        InfluxDB.Duration.minutes(2),
+        Interval
+          .fromUntil(Instant.ofEpochSecond(0), Instant.ofEpochSecond(200)),
+        Some(OR(IFieldFilter("value", LT, IFloat(22)), IFieldFilter("value", GT, IFloat(23))))
+      )
+
+      //println(query)
+
+      val data = Await.result(influxClient.query("dbname", query), 5.seconds)
+      data.error must beNone
+      //println(data.results)
+      data.results.get.head.series.get must have size 1
+      data.results.get.head.series.get.head.values.get must be equalTo Seq(
+        Seq(Some(IString("1970-01-01T00:00:00Z")), Some(IFloat(20.0))),
         Seq(Some(IString("1970-01-01T00:02:00Z")), Some(IFloat(25.0)))
       )
     }

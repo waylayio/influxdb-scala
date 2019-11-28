@@ -2,6 +2,7 @@ package io.waylay.influxdb.query
 
 import java.time.Instant
 
+import io.waylay.influxdb.Influx.{IBoolean, IFieldValue, IFloat, IInteger, IString}
 import io.waylay.influxdb.{InfluxDB, SharedProtocol}
 import io.waylay.influxdb.InfluxDB._
 import io.waylay.influxdb.query.InfluxQueryBuilder.Order.{Ascending, Descending}
@@ -57,7 +58,7 @@ object InfluxQueryBuilder extends SharedProtocol{
        |WHERE ${escapeValue(tagSelector._1)}=${escapeStringLiteral(tagSelector._2)}
        |${timeWhere.map("AND " + _).getOrElse("")}
        |${toOrderClause(order)}
-       |""".stripMargin.trim
+       |""".stripMargin.trim.linesIterator.filterNot(_.trim.isEmpty).mkString("\n")
   }
 
   def grouped(
@@ -66,8 +67,9 @@ object InfluxQueryBuilder extends SharedProtocol{
     measurement: String,
     grouping: Duration,
     interval: Interval = Interval.beginningOfTimeUntilNow,
+    filter: Option[IFilter] = None,
     limit: Option[Long] = None
-  ): String = groupedMultiple(Seq(func), tagSelector, measurement, grouping, interval, limit)
+  ): String = groupedMultiple(Seq(func), tagSelector, measurement, grouping, interval, filter, limit)
 
   /**
     * Variation of grouped that can take multiple IFunctions
@@ -78,6 +80,7 @@ object InfluxQueryBuilder extends SharedProtocol{
     measurement: String,
     grouping: Duration,
     interval: Interval = Interval.beginningOfTimeUntilNow,
+    filter:Option[IFilter] = None,
     limit: Option[Long] = None
   ): String = {
 
@@ -86,6 +89,7 @@ object InfluxQueryBuilder extends SharedProtocol{
     }
 
     val timeWhere = instantToWhereExpression(interval)
+    val fieldFilterWhere = filter.map(filterToWhereExpressions)
     // TODO validate that timeWhere is not None?
 
     s"""
@@ -93,8 +97,10 @@ object InfluxQueryBuilder extends SharedProtocol{
        |FROM ${escapeValue(measurement)}
        |WHERE ${escapeValue(tagSelector._1)}=${escapeStringLiteral(tagSelector._2)}
        |${timeWhere.map("AND " + _).getOrElse("")}
+       |${fieldFilterWhere.map("AND (" + _ + ")").getOrElse("")}
        |GROUP BY time(${durationLiteral(grouping)})
-       |""".stripMargin.trim + limit.map(l => "\nLIMIT " + l).getOrElse("")
+       |${limit.map(l => "\nLIMIT " + l).getOrElse("")}
+       |""".stripMargin.trim.linesIterator.filterNot(_.trim.isEmpty).mkString("\n")
 
 
     // WHERE time > 1434059627s
@@ -165,5 +171,36 @@ object InfluxQueryBuilder extends SharedProtocol{
       case Interval(None, Some(end)) => Some("time < " + instantToExpression(end))
       case Interval(Some(start), Some(end)) => Some("time >= " + instantToExpression(start) + " AND time < " + instantToExpression(end))
     }
+  }
+
+  private def operatorString(op:IFieldFilterOperation):String = op match {
+    case InfluxDB.EQ => "="
+    case InfluxDB.NE => "<>"
+    case InfluxDB.LT => "<"
+    case InfluxDB.LTE => "<="
+    case InfluxDB.GT => ">"
+    case InfluxDB.GTE => ">="
+  }
+
+  private def escapedFieldValue(value: IFieldValue):String = value match {
+    case IString(stringValue) => escapeStringLiteral(stringValue)
+    case IBoolean(bool) => bool.toString
+    case IInteger(intVal) => intVal.toString
+    case IFloat(doubleVal) => doubleVal.toString
+
+  }
+  private def fieldFilterToWhereExpression(filter: IFieldFilter) = {
+    s"${escapeValue(filter.field_key)} ${operatorString(filter.operator)} ${escapedFieldValue(filter.value)}"
+  }
+
+  private def filterToWhereExpressions(filter:IFilter):String = filter match {
+    case f:IFieldFilter =>
+      fieldFilterToWhereExpression(f)
+    case AND(f1, f2, others @ _*) =>
+      (Seq(f1, f2) ++ others).map(f => s"(${filterToWhereExpressions(f)})").mkString(" AND ")
+    case OR(f1, f2, others @ _*) =>
+      (Seq(f1, f2) ++ others).map(f => s"(${filterToWhereExpressions(f)})").mkString(" OR ")
+    case NOT(filter) =>
+      s"NOT (${filterToWhereExpressions(filter)})"
   }
 }

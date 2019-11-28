@@ -2,6 +2,7 @@ package io.waylay.influxdb.query
 
 import java.time.Instant
 
+import io.waylay.influxdb.Influx.{IFloat, IInteger, IString}
 import io.waylay.influxdb.InfluxDB._
 import io.waylay.influxdb.query.InfluxQueryBuilder.{Interval, Order}
 import org.specs2.mutable.Specification
@@ -43,6 +44,20 @@ class InfluxQueryBuilderSpec extends Specification {
                               |ORDER BY time ASC""".stripMargin
     }
 
+    "remove empty lines in simple query" in {
+      val query = InfluxQueryBuilder.simple(
+        Seq("value"),
+        "resource" -> "Living",
+        "CO2")
+
+      //println(query.replace("\n", " "))
+
+      query must be equalTo """SELECT "value"
+                              |FROM "CO2"
+                              |WHERE "resource"='Living'
+                              |ORDER BY time ASC""".stripMargin
+    }
+
     "apply ordering correctly" in {
       val query = InfluxQueryBuilder.simple(
         Seq("value"),
@@ -75,6 +90,22 @@ class InfluxQueryBuilderSpec extends Specification {
                               |GROUP BY time(1h)""".stripMargin
     }
 
+    "remove empty lines in grouped query" in {
+      val query = InfluxQueryBuilder.grouped(
+        Count("value"),
+        "resource" -> "Living",
+        "CO2",
+        Duration.hours(1)
+      )
+
+      //println(query.replace("\n", " "))
+
+      query must be equalTo """SELECT COUNT("value")
+                              |FROM "CO2"
+                              |WHERE "resource"='Living'
+                              |GROUP BY time(1h)""".stripMargin
+    }
+
     "work with multiple groups" in {
       val query = InfluxQueryBuilder.groupedMultiple(
         Seq(Count(Distinct("value")), Max("value")),
@@ -98,12 +129,104 @@ class InfluxQueryBuilderSpec extends Specification {
         Duration.hours(1),
         Interval.relativeTo(Duration.days(10), Instant.ofEpochMilli(0)))
 
-      println(query.replace("\n", " "))
+      query must be equalTo """SELECT MAX("value")
+                              |FROM "CO2"
+                              |WHERE "resource"='Living'
+                              |AND time >= 0ms - 10d
+                              |GROUP BY time(1h)""".stripMargin
+    }
+
+    "apply a single filter clause correctly" in {
+      val query = InfluxQueryBuilder.grouped(
+        Max("value"),
+        "resource" -> "Living",
+        "CO2",
+        Duration.hours(1),
+        Interval.relativeTo(Duration.days(10), Instant.ofEpochMilli(0)),
+        Some(IFieldFilter("value", LTE, IFloat(130.98)))
+      )
 
       query must be equalTo """SELECT MAX("value")
                               |FROM "CO2"
                               |WHERE "resource"='Living'
                               |AND time >= 0ms - 10d
+                              |AND ("value" <= 130.98)
+                              |GROUP BY time(1h)""".stripMargin
+    }
+
+    "apply a multiple and filter clause correctly" in {
+      val query = InfluxQueryBuilder.grouped(
+        Max("value"),
+        "resource" -> "Living",
+        "CO2",
+        Duration.hours(1),
+        Interval.relativeTo(Duration.days(10), Instant.ofEpochMilli(0)),
+        Some(AND(IFieldFilter("value", LTE, IFloat(130.98)), IFieldFilter("value", GTE, IFloat(98.78))))
+      )
+
+      query must be equalTo """SELECT MAX("value")
+                              |FROM "CO2"
+                              |WHERE "resource"='Living'
+                              |AND time >= 0ms - 10d
+                              |AND (("value" <= 130.98) AND ("value" >= 98.78))
+                              |GROUP BY time(1h)""".stripMargin
+    }
+
+    "apply a multiple or filter clause correctly" in {
+      val query = InfluxQueryBuilder.grouped(
+        Max("value"),
+        "resource" -> "Living",
+        "CO2",
+        Duration.hours(1),
+        Interval.relativeTo(Duration.days(10), Instant.ofEpochMilli(0)),
+        Some(OR(IFieldFilter("value", LTE, IFloat(98.78)), IFieldFilter("value", GTE, IFloat(130.98))))
+      )
+
+      query must be equalTo """SELECT MAX("value")
+                              |FROM "CO2"
+                              |WHERE "resource"='Living'
+                              |AND time >= 0ms - 10d
+                              |AND (("value" <= 98.78) OR ("value" >= 130.98))
+                              |GROUP BY time(1h)""".stripMargin
+    }
+
+    "apply a not filter clause correctly" in {
+      val query = InfluxQueryBuilder.grouped(
+        Max("value"),
+        "resource" -> "Living",
+        "CO2",
+        Duration.hours(1),
+        Interval.relativeTo(Duration.days(10), Instant.ofEpochMilli(0)),
+        Some(NOT(IFieldFilter("value", LTE, IFloat(98.78))))
+      )
+
+      query must be equalTo """SELECT MAX("value")
+                              |FROM "CO2"
+                              |WHERE "resource"='Living'
+                              |AND time >= 0ms - 10d
+                              |AND (NOT ("value" <= 98.78))
+                              |GROUP BY time(1h)""".stripMargin
+    }
+
+    "apply a complex filter clause correctly" in {
+      val query = InfluxQueryBuilder.grouped(
+        Max("value"),
+        "resource" -> "Living",
+        "CO2",
+        Duration.hours(1),
+        Interval.relativeTo(Duration.days(10), Instant.ofEpochMilli(0)),
+        Some(OR(
+          IFieldFilter("value", LTE, IFloat(98.78)),
+          AND(IFieldFilter("value", GTE, IFloat(130.98)), NOT(IFieldFilter("value", EQ, IInteger(140)))),
+          IFieldFilter("value", NE, IString("error"))
+        ))
+      )
+
+      query must be equalTo """SELECT MAX("value")
+                              |FROM "CO2"
+                              |WHERE "resource"='Living'
+                              |AND time >= 0ms - 10d
+                              |AND (("value" <= 98.78) OR (("value" >= 130.98) AND (NOT ("value" = 140))) OR ("value" <> 'error'))
                               |GROUP BY time(1h)""".stripMargin
     }
 
@@ -114,8 +237,6 @@ class InfluxQueryBuilderSpec extends Specification {
         "steps",
         Duration.hours(1),
         Interval.relativeTo(Duration.days(10), Instant.ofEpochMilli(0)))
-
-      println(query.replace("\n", " "))
 
       query must be equalTo """SELECT SUM("value")
                               |FROM "steps"

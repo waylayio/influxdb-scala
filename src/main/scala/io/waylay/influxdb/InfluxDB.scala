@@ -93,7 +93,19 @@ object InfluxDB{
   case class First(field_key: String) extends IFunction
   case class Last(field_key: String) extends IFunction
 
+  sealed trait IFieldFilterOperation
+  case object EQ extends IFieldFilterOperation
+  case object NE extends IFieldFilterOperation
+  case object LT extends IFieldFilterOperation
+  case object LTE extends IFieldFilterOperation
+  case object GT extends IFieldFilterOperation
+  case object GTE extends IFieldFilterOperation
 
+  sealed trait IFilter
+  case class IFieldFilter(field_key:String, operator:IFieldFilterOperation, value: IFieldValue) extends IFilter
+  case class AND(filter1: IFilter, filter2:IFilter, other:IFilter*) extends IFilter
+  case class OR(filter1:IFilter, filter2:IFilter, other:IFilter*) extends IFilter
+  case class NOT(filter:IFilter) extends IFilter
 
   private def epochToQueryParam(epoch: Epoch) = epoch match {
     case Hours => "h"
