@@ -14,7 +14,7 @@ script:
 - sbt ++$TRAVIS_SCALA_VERSION clean test
 
 after_success:
-- '[[ $TRAVIS_BRANCH == "master" ]] && { sbt publish; };'
+- '[[ $TRAVIS_BRANCH == "master" ]] && { sbt ++$TRAVIS_SCALA_VERSION publish; };'
 env:
   global:
   - secure: M12wT6/75DEsq0bXmCy8Z5RGI7/mXVlY1sbNoqQG9DSGSDb4ELzJjZxuaFrbSCR7jY6skMcvUOlPUsFKygJZzTT9c9vgk4xvLZcLqPMsK+0MNnko+wy91LWOTToMJTmmYaYy/GnD0Kn3GIdOas8Nmi1Rxgqae43XVnPj5beBIxpe0iosgHBmgOCSsrUsGLaQGWsSMOy/Er8W6oc+Bo5/0A579HOb/7xJ6lNaFctnC+Gb35guVXuuJLj7IQzujY90ejNwSJhMHMH5Hl181UKs5zYGJqz9fM6RsLZ3UFzmclJjziZd7nUJbDa5/56UsV8jLg22R3QPkzquGvgh7Pqv4i0G2H1BsguyQRqjm/ZglvLlxGy4dvlRfprB94ZvRbUwx1WwzOha3I3rs+DKvhVtUUa87mJL8HeCG3ltFzUnB1fdogJnucXxyTq1ZuKLV14pmr7XzsBBwwkg5Teb/eo0SQ4oI9O1BNVPNGI4uGG4LCXKe4ThPAGdMO/SOElND2EmBbH1eS4H3jfpvlc4J38gughxH1mdA7ExxFNLM/FXLSZ6vA5z46xuDJSbp1wEW4pTE7T1kmj9PLlqTrEpnADwtfkbzGT3ztoSYqJ82tgGYdPXLGBczBXeTbW+O9CFcYHu9Wi+zloAZCGkKrau/k9uUdnu1Vn7QMqdBfE43X1WOqs=
