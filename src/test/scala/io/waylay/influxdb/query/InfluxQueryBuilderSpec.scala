@@ -12,7 +12,7 @@ class InfluxQueryBuilderSpec extends Specification {
   "querying" should {
 
     "apply time start correctly" in {
-      val query = InfluxQueryBuilder.simpleMiltipleMeasurements(
+      val query = InfluxQueryBuilder.simpleMultipleMeasurements(
         Seq("value"),
         "resource" -> "Living",
         Seq("CO2"),
@@ -46,7 +46,7 @@ class InfluxQueryBuilderSpec extends Specification {
     }
 
     "remove empty lines in simple query" in {
-      val query = InfluxQueryBuilder.simpleMiltipleMeasurements(Seq("value"), "resource" -> "Living", Seq("CO2"))
+      val query = InfluxQueryBuilder.simpleMultipleMeasurements(Seq("value"), "resource" -> "Living", Seq("CO2"))
 
       //println(query.replace("\n", " "))
 

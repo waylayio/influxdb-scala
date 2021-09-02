@@ -17,9 +17,9 @@ object InfluxQueryBuilder extends SharedProtocol {
     order: Order = Order.defaultOrder,
     limit: Option[Long] = None
   ): String =
-    simpleMiltipleMeasurements(fields, tagSelector, Seq(measurement), interval, order, limit)
+    simpleMultipleMeasurements(fields, tagSelector, Seq(measurement), interval, order, limit)
 
-  def simpleMiltipleMeasurements(
+  def simpleMultipleMeasurements(
     fields: Seq[String],
     tagSelector: (String, String),
     measurements: Seq[String],
