@@ -42,7 +42,7 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
       val query = InfluxQueryBuilder.simple(
         Seq("value"),
         "location" -> "room1",
-        Seq("temperature")
+        "temperature"
       )
 
       val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)

@@ -12,18 +12,28 @@ object InfluxQueryBuilder extends SharedProtocol {
   def simple(
     fields: Seq[String],
     tagSelector: (String, String),
-    measurement: Seq[String],
+    measurement: String,
+    interval: Interval = Interval.beginningOfTimeUntilNow,
+    order: Order = Order.defaultOrder,
+    limit: Option[Long] = None
+  ): String =
+    simpleMiltipleMeasurements(fields, tagSelector, Seq(measurement), interval, order, limit)
+
+  def simpleMiltipleMeasurements(
+    fields: Seq[String],
+    tagSelector: (String, String),
+    measurements: Seq[String],
     interval: Interval = Interval.beginningOfTimeUntilNow,
     order: Order = Order.defaultOrder,
     limit: Option[Long] = None
   ): String = {
-    val selects      = fields.map(escapeValue).mkString(", ")
-    val measurements = measurement.map(escapeValue).mkString(", ")
-    val timeWhere    = instantToWhereExpression(interval)
+    val selects            = fields.map(escapeValue).mkString(", ")
+    val measurementsString = measurements.map(escapeValue).mkString(", ")
+    val timeWhere          = instantToWhereExpression(interval)
 
     s"""
        |SELECT $selects
-       |FROM $measurements
+       |FROM $measurementsString
        |WHERE ${escapeValue(tagSelector._1)}=${escapeStringLiteral(tagSelector._2)}
        |${timeWhere.map("AND " + _).getOrElse("")}
        |${toOrderClause(order)}
