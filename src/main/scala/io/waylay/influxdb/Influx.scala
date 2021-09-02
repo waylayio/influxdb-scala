@@ -10,10 +10,10 @@ object Influx {
   type Version = String
 
   sealed trait IFieldValue
-  case class IInteger(value: Long) extends IFieldValue
-  case class IFloat(value: Double) extends IFieldValue
+  case class IInteger(value: Long)    extends IFieldValue
+  case class IFloat(value: Double)    extends IFieldValue
   case class IBoolean(value: Boolean) extends IFieldValue
-  case class IString(value: String) extends IFieldValue
+  case class IString(value: String)   extends IFieldValue
 
   case class IPoint(
     measurementName: String,
@@ -39,15 +39,13 @@ object Influx {
   case class Results(
     results: Option[Seq[Result]],
     error: Option[String]
-  ){
-    lazy val allErrors = {
+  ) {
+    lazy val allErrors: Seq[String] = {
       error.toSeq ++ results.getOrElse(Seq.empty).flatMap(_.error)
     }
-    lazy val hasErrors = allErrors.nonEmpty
-    lazy val hasDatabaseNotFoundError = allErrors.exists(_.contains("database not found"))
+    lazy val hasErrors: Boolean                = allErrors.nonEmpty
+    lazy val hasDatabaseNotFoundError: Boolean = allErrors.exists(_.contains("database not found"))
   }
-
-
   //  {
   //    "results" : [ {
   //      "series" : [ {
@@ -68,6 +66,4 @@ object Influx {
   //    } ]
   //  }
 
-
 }
-

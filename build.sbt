@@ -1,22 +1,22 @@
 import sbt.Keys.{crossScalaVersions, scalacOptions}
 
-val playJsonVersion = "2.7.4"
-val playVersion = "2.7.3" // test only
-val playWsVersion = "2.0.7"
-val slf4jVersion = "1.7.12"
-val logbackVersion = "1.1.7"
-val specs2Version = "4.8.1"
+val playJsonVersion      = "2.7.4"
+val playVersion          = "2.7.3" // test only
+val playWsVersion        = "2.0.7"
+val slf4jVersion         = "1.7.12"
+val logbackVersion       = "1.1.7"
+val specs2Version        = "4.8.1"
 val dockerTestkitVersion = "0.10.0-beta8"
 
 val scala2_12 = "2.12.10"
-val scala2_13 = "2.13.1"
+val scala2_13 = "2.13.6"
 
 scalaVersion := scala2_13
 crossScalaVersions := Seq(scala2_12, scala2_13)
 
 releaseCrossBuild := true
 
-scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation")
+ThisBuild / scalacOptions ++= Seq("-unchecked", "-deprecation")
 
 // we need both Test and IntegrationTest scopes for a correct pom, see https://github.com/sbt/sbt/issues/1380
 val TestAndIntegrationTest = IntegrationTest.name + "," + Test.name
@@ -37,26 +37,26 @@ lazy val nettyExclusions = Seq(
   "netty-codec-http"
 ).map(name => ExclusionRule(organization = "io.netty", name = name))
 
-organization in ThisBuild := "io.waylay.influxdb"
+ThisBuild / organization := "io.waylay.influxdb"
 
 lazy val root = (project in file("."))
   .settings(
     name := "influxdb-scala",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % playJsonVersion,
-      "com.typesafe.play" %% "play-ws-standalone" % playWsVersion,
-      "com.typesafe.play" %% "play-ws-standalone-json" % playWsVersion,
-      //"com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
-      "org.slf4j" % "slf4j-api" % slf4jVersion,
-      "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
-      // TEST
-      "ch.qos.logback" % "logback-classic" % logbackVersion % TestAndIntegrationTest,
-      "org.specs2" %% "specs2-core" % specs2Version % TestAndIntegrationTest,
-      "org.specs2" %% "specs2-junit" % specs2Version % TestAndIntegrationTest,
-      //"com.typesafe.play" %% "play-ahc-ws" % playVersion % TestAndIntegrationTest, // neede for play-mockws
-      "com.typesafe.play" %% "play-ahc-ws-standalone" % playWsVersion % TestAndIntegrationTest,
-      "com.whisk" %% "docker-testkit-core" % dockerTestkitVersion % TestAndIntegrationTest excludeAll (nettyExclusions: _*)
-    ).map(_.excludeAll(libraryExclusions: _*))
+        "com.typesafe.play" %% "play-json"               % playJsonVersion,
+        "com.typesafe.play" %% "play-ws-standalone"      % playWsVersion,
+        "com.typesafe.play" %% "play-ws-standalone-json" % playWsVersion,
+        //"com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
+        "org.slf4j" % "slf4j-api"      % slf4jVersion,
+        "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
+        // TEST
+        "ch.qos.logback" % "logback-classic" % logbackVersion % TestAndIntegrationTest,
+        "org.specs2"     %% "specs2-core"    % specs2Version  % TestAndIntegrationTest,
+        "org.specs2"     %% "specs2-junit"   % specs2Version  % TestAndIntegrationTest,
+        //"com.typesafe.play" %% "play-ahc-ws" % playVersion % TestAndIntegrationTest, // neede for play-mockws
+        "com.typesafe.play" %% "play-ahc-ws-standalone" % playWsVersion        % TestAndIntegrationTest,
+        "com.whisk"         %% "docker-testkit-core"    % dockerTestkitVersion % TestAndIntegrationTest excludeAll (nettyExclusions: _*)
+      ).map(_.excludeAll(libraryExclusions: _*))
   )
   .configs(IntegrationTest)
   .settings(Defaults.itSettings: _*)
@@ -66,13 +66,13 @@ enablePlugins(SiteScaladocPlugin)
 
 val publishScalaDoc = (ref: ProjectRef) =>
   ReleaseStep(
-    action = releaseStepTaskAggregated(ghpagesPushSite in ref) // publish scaladoc
-)
+    action = releaseStepTaskAggregated(ref / ghpagesPushSite) // publish scaladoc
+  )
 
 val runIntegrationTest = (ref: ProjectRef) =>
   ReleaseStep(
-    action = releaseStepTaskAggregated(test in IntegrationTest in ref)
-)
+    action = releaseStepTaskAggregated(ref / IntegrationTest / test)
+  )
 
 releaseProcess := {
   import sbtrelease.ReleaseStateTransformations._

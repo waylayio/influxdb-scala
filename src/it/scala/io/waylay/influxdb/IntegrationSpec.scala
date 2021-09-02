@@ -4,7 +4,10 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.spotify.docker.client.DefaultDockerClient
 import com.typesafe.config.ConfigFactory
-import com.whisk.docker.testkit.{ContainerCommandExecutor, ContainerSpec, DockerContainerManager, DockerReadyChecker, DockerTestTimeouts, SingleContainer}
+import com.whisk.docker.testkit.{
+  Container, ContainerCommandExecutor, ContainerSpec, DockerContainerManager, DockerReadyChecker, DockerTestTimeouts,
+  SingleContainer
+}
 import org.slf4j.LoggerFactory
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
 
@@ -16,9 +19,9 @@ trait IntegrationSpec extends BeforeAfterAllStopOnError {
   private lazy val log = LoggerFactory.getLogger(this.getClass)
 
   val DefaultInfluxDBAdminPort = 8083
-  val DefaultInfluxDBPort = 8086
+  val DefaultInfluxDBPort      = 8086
 
-  lazy val influxdbContainer = ContainerSpec("influxdb:1.3.9-alpine")
+  lazy val influxdbContainer: Container = ContainerSpec("influxdb:1.8.9-alpine")
     .withExposedPorts(DefaultInfluxDBPort, DefaultInfluxDBAdminPort)
     .withReadyChecker(
       //      PrintingLogLineContains("Listening on HTTP: [::]:8086")
@@ -26,7 +29,8 @@ trait IntegrationSpec extends BeforeAfterAllStopOnError {
         .HttpResponseCode(DefaultInfluxDBPort, "/ping", code = 204)
         .within(100.millis)
         .looped(20, 250.millis)
-    ).toContainer
+    )
+    .toContainer
 
   def beforeAll(): Unit =
     startAllOrFail()
@@ -42,12 +46,12 @@ trait IntegrationSpec extends BeforeAfterAllStopOnError {
     Implicits.global
   )
 
-  val classloader = getClass.getClassLoader
-  implicit val actorSystem = ActorSystem("test", ConfigFactory.load(classloader), classloader)
-  implicit val materializer = ActorMaterializer()
-  lazy val mappedInfluxPort = influxdbContainer.mappedPort(InfluxDB.DEFAULT_PORT)
-  val host = "localhost" //state.docker.host
-  val wsClient = StandaloneAhcWSClient()
+  val classloader: ClassLoader                 = getClass.getClassLoader
+  implicit val actorSystem: ActorSystem        = ActorSystem("test", ConfigFactory.load(classloader), classloader)
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
+  lazy val mappedInfluxPort: Int               = influxdbContainer.mappedPort(InfluxDB.DEFAULT_PORT)
+  val host                                     = "localhost" //state.docker.host
+  val wsClient: StandaloneAhcWSClient          = StandaloneAhcWSClient()
 
   // Do we have a around available that makes this more robust?
 

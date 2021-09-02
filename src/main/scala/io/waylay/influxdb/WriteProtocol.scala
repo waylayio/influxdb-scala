@@ -6,7 +6,7 @@ import io.waylay.influxdb.Influx._
 
 import scala.concurrent.duration._
 
-private[influxdb] object WriteProtocol extends SharedProtocol{
+private[influxdb] object WriteProtocol extends SharedProtocol {
 
   def write(precision: TimeUnit, points: IPoint*): String = {
     // a DecimalFormat is not thread safe
@@ -29,23 +29,29 @@ private[influxdb] object WriteProtocol extends SharedProtocol{
         throw new RuntimeException(s"precision $precision not implemented")
     }
 
-    val lines = points.map{ point =>
+    val lines = points.map { point =>
       val measurementName = escapeTag(point.measurementName)
-      val tags = point.tags.map{ case (key, value) =>
-        "," + escapeTag(key) + "=" + escapeTag(value)
-      }.mkString("")
-      val fields = point.fields.map{ case (key, fieldValue) =>
-        val stringValue = fieldValue match {
-          case IInteger(value) => value.toString + "i"
-          case IFloat(value) =>
-            //"%g" format value
-            // df.format(value)
-            value.toString.replace('E', 'e')
-          case IBoolean(value) => value.toString
-          case IString(value) => escapeValue(value)
+      val tags = point.tags
+        .map {
+          case (key, value) =>
+            "," + escapeTag(key) + "=" + escapeTag(value)
         }
-        escapeTag(key) + "=" + stringValue
-      }.mkString(",")
+        .mkString("")
+      val fields = point.fields
+        .map {
+          case (key, fieldValue) =>
+            val stringValue = fieldValue match {
+              case IInteger(value) => value.toString + "i"
+              case IFloat(value)   =>
+                //"%g" format value
+                // df.format(value)
+                value.toString.replace('E', 'e')
+              case IBoolean(value) => value.toString
+              case IString(value)  => escapeValue(value)
+            }
+            escapeTag(key) + "=" + stringValue
+        }
+        .mkString(",")
       val timestamp = applyPrecision(point.timestamp)
       s"""$measurementName$tags $fields $timestamp"""
     }
@@ -53,16 +59,14 @@ private[influxdb] object WriteProtocol extends SharedProtocol{
   }
 
   /**
-    * The key is the measurement name and any optional tags separated by commas. Measurement names, tag keys,
-    * and tag values must escape any spaces or commas using a backslash (\).
-    * For example: \ and \,. All tag values are stored as strings and should not be surrounded in quotes.
-    *
-    * @param tag the tag to escape
-    * @return the escaped tag
-    */
-  def escapeTag(tag: String) = {
-    tag.replace(" ","\\ ").replace(",", "\\,")
-  }
-
+   * The key is the measurement name and any optional tags separated by commas. Measurement names, tag keys,
+   * and tag values must escape any spaces or commas using a backslash (\).
+   * For example: \ and \,. All tag values are stored as strings and should not be surrounded in quotes.
+   *
+   * @param tag the tag to escape
+   * @return the escaped tag
+   */
+  def escapeTag(tag: String): String =
+    tag.replace(" ", "\\ ").replace(",", "\\,")
 
 }
