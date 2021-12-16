@@ -65,9 +65,8 @@ trait IntegrationSpec extends BeforeAfterAllStopOnError {
     wsClient.close()
     materializer.shutdown()
     actorSystem.terminate()
-    try {
-      containerManager.stop()
-    } catch {
+    try containerManager.stop()
+    catch {
       case e: Throwable =>
         log.error(e.getMessage, e)
     }

@@ -32,24 +32,22 @@ private[influxdb] object WriteProtocol extends SharedProtocol {
     val lines = points.map { point =>
       val measurementName = escapeTag(point.measurementName)
       val tags = point.tags
-        .map {
-          case (key, value) =>
-            "," + escapeTag(key) + "=" + escapeTag(value)
+        .map { case (key, value) =>
+          "," + escapeTag(key) + "=" + escapeTag(value)
         }
         .mkString("")
       val fields = point.fields
-        .map {
-          case (key, fieldValue) =>
-            val stringValue = fieldValue match {
-              case IInteger(value) => value.toString + "i"
-              case IFloat(value)   =>
-                //"%g" format value
-                // df.format(value)
-                value.toString.replace('E', 'e')
-              case IBoolean(value) => value.toString
-              case IString(value)  => escapeValue(value)
-            }
-            escapeTag(key) + "=" + stringValue
+        .map { case (key, fieldValue) =>
+          val stringValue = fieldValue match {
+            case IInteger(value) => value.toString + "i"
+            case IFloat(value)   =>
+              //"%g" format value
+              // df.format(value)
+              value.toString.replace('E', 'e')
+            case IBoolean(value) => value.toString
+            case IString(value)  => escapeValue(value)
+          }
+          escapeTag(key) + "=" + stringValue
         }
         .mkString(",")
       val timestamp = applyPrecision(point.timestamp)

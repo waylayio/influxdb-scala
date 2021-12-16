@@ -97,8 +97,8 @@ object InfluxQueryBuilder extends SharedProtocol {
     s"""
        |DELETE
        |WHERE ${escapeValue(tagSelector._1)}=${escapeStringLiteral(tagSelector._2)}
-       |""".stripMargin.trim + from.fold("")(i => s" AND time >= ${i.toEpochMilli}ms") + until.fold("")(
-      i => s" AND time <= ${i.toEpochMilli}ms"
+       |""".stripMargin.trim + from.fold("")(i => s" AND time >= ${i.toEpochMilli}ms") + until.fold("")(i =>
+      s" AND time <= ${i.toEpochMilli}ms"
     )
 
   /**
