@@ -1,15 +1,15 @@
 import sbt.Keys.{crossScalaVersions, scalacOptions}
 
-val playJsonVersion      = "2.7.4"
+val playJsonVersion      = "2.9.2"
 val playVersion          = "2.7.3" // test only
-val playWsVersion        = "2.0.7"
+val playWsVersion        = "2.0.8"
 val slf4jVersion         = "1.7.12"
-val logbackVersion       = "1.1.7"
+val logbackVersion       = "1.1.11"
 val specs2Version        = "4.8.1"
-val dockerTestkitVersion = "0.10.0-beta8"
+val dockerTestkitVersion = "0.10.0"
 
-val scala2_12 = "2.12.14"
-val scala2_13 = "2.13.6"
+val scala2_12 = "2.12.15"
+val scala2_13 = "2.13.7"
 
 scalaVersion := scala2_13
 crossScalaVersions := Seq(scala2_12, scala2_13)
