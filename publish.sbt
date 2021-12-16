@@ -9,13 +9,12 @@ publishTo := {
   if (isSnapshot.value)
     Some("snapshots" at nexus + "content/repositories/snapshots")
   else
-    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+    Some("releases" at nexus + "service/local/staging/deploy/maven2")
 }
 
 updateOptions := updateOptions.value.withGigahorse(false)
 
-pomExtra := (
-  <url>https://github.com/waylayio/influxdb-scala</url>
+pomExtra := (<url>https://github.com/waylayio/influxdb-scala</url>
     <licenses>
       <license>
         <name>MIT License</name>

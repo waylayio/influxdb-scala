@@ -3,9 +3,7 @@ package io.waylay.influxdb
 import org.specs2.specification.core.{Fragments, SpecificationStructure}
 import org.specs2.specification.create.FragmentsFactory
 
-trait BeforeAfterAllStopOnError
-    extends SpecificationStructure
-    with FragmentsFactory {
+trait BeforeAfterAllStopOnError extends SpecificationStructure with FragmentsFactory {
 
   def beforeAll(): Unit
   def afterAll(): Unit
