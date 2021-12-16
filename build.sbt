@@ -6,7 +6,7 @@ val playWsVersion        = "2.0.7"
 val slf4jVersion         = "1.7.12"
 val logbackVersion       = "1.1.7"
 val specs2Version        = "4.8.1"
-val dockerTestkitVersion = "0.10.0-beta8"
+val dockerTestkitVersion = "0.10.0"
 
 val scala2_12 = "2.12.14"
 val scala2_13 = "2.13.6"
