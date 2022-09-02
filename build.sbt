@@ -1,6 +1,6 @@
 import sbt.Keys.{crossScalaVersions, scalacOptions}
 
-val playJsonVersion      = "2.9.2"
+val playJsonVersion      = "2.9.3"
 val playVersion          = "2.7.3" // test only
 val playWsVersion        = "2.1.10"
 val slf4jVersion         = "1.7.36"
