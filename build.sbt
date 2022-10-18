@@ -5,11 +5,11 @@ val playVersion          = "2.7.3" // test only
 val playWsVersion        = "2.1.10"
 val slf4jVersion         = "1.7.36"
 val logbackVersion       = "1.2.11"
-val specs2Version        = "4.16.1"
+val specs2Version        = "4.17.0"
 val dockerTestkitVersion = "0.11.0"
 
-val scala2_12 = "2.12.16"
-val scala2_13 = "2.13.8"
+val scala2_12 = "2.12.17"
+val scala2_13 = "2.13.10"
 
 scalaVersion := scala2_13
 crossScalaVersions := Seq(scala2_12, scala2_13)
