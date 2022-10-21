@@ -322,11 +322,9 @@ class InfluxDB(
   }
 
   private def createDb(databaseName: String): Future[Unit] = {
-    val q             = s"""CREATE DATABASE "$databaseName""""
-    val q2            = s"""ALTER RETENTION POLICY autogen ON "$databaseName" DURATION $defaultRetention DEFAULT"""
-    val combinedQuery = q + ";" + q2
+    val q             = s"""CREATE DATABASE "$databaseName" WITH DURATION $defaultRetention REPLICATION 1 NAME ${databaseName}_rp"""
     val url           = s"$baseUrl/query"
-    authenticatedUrl(url).addQueryStringParameters("q" -> combinedQuery).get().flatMap { response =>
+    authenticatedUrl(url).addHttpHeaders("Content-Type"->"application/x-www-form-urlencoded").post(s"q=$q").flatMap { response =>
       logger.info("status: " + response.status)
       logger.debug(response.headers.mkString("\n"))
       logger.debug(response.body)
