@@ -77,7 +77,7 @@ object InfluxDB {
     def apply(field_key: String)  = new Count(Left(field_key))
     def apply(distinct: Distinct) = new Count(Right(distinct))
 
-    //def unapply(distinct: Count) = distinct.either
+    // def unapply(distinct: Count) = distinct.either
   }
   case class Count(either: Either[String, Distinct])                                  extends IFunction
   case class Min(field_key: String)                                                   extends IFunction
@@ -171,7 +171,7 @@ class InfluxDB(
   port: Int = InfluxDB.DEFAULT_PORT,
   username: String = "root",
   password: String = "root",
-  //var database: String = "",
+  // var database: String = "",
   schema: String = "http",
   defaultRetention: String = "INF"
 )(implicit ec: ExecutionContext) {
@@ -196,51 +196,23 @@ class InfluxDB(
     }
   }
 
+  def getRetention(dbName: String): Future[Results] =
+    authenticatedUrlFor(Query)
+      .addQueryStringParameters("q" -> s"SHOW RETENTION POLICIES ON $dbName")
+      .get()
+      .flatMap(getResultsFromResponse)
+
   def stats: Future[Results] =
     authenticatedUrlFor(Query)
       .addQueryStringParameters("q" -> "SHOW STATS")
       .get()
-      .flatMap { response =>
-        logger.debug("status: " + response.status)
-        response.status match {
-          case 200 => // ok
-            logger.trace(s"got data\n${Json.prettyPrint(response.body[JsValue])}")
-            import QueryResultProtocol._
-            val results = response.body[JsValue].as[Results]
-            if (results.hasErrors) {
-              // possible errors:
-              // too many points in the group by interval. maybe you forgot to specify a where time clause?
-              Future.failed(new RuntimeException(results.allErrors.mkString(" | ")))
-            } else {
-              Future.successful(results)
-            }
-          case other =>
-            Future.failed(new RuntimeException(s"Got status ${response.status} with body: ${response.body}"))
-        }
-      }
+      .flatMap(getResultsFromResponse)
 
   def diagnostics: Future[Results] =
     authenticatedUrlFor(Query)
       .addQueryStringParameters("q" -> "SHOW DIAGNOSTICS")
       .get()
-      .flatMap { response =>
-        logger.trace("diagnostics: " + response.status)
-        response.status match {
-          case 200 => // ok
-            logger.trace(s"got data\n${Json.prettyPrint(response.body[JsValue])}")
-            import QueryResultProtocol._
-            val results = response.body[JsValue].as[Results]
-            if (results.hasErrors) {
-              // possible errors:
-              // too many points in the group by interval. maybe you forgot to specify a where time clause?
-              Future.failed(new RuntimeException(results.allErrors.mkString(" | ")))
-            } else {
-              Future.successful(results)
-            }
-          case other =>
-            Future.failed(new RuntimeException(s"Got status ${response.status} with body: ${response.body}"))
-        }
-      }
+      .flatMap(getResultsFromResponse)
 
   def query(
     databaseName: String,
@@ -321,22 +293,40 @@ class InfluxDB(
     }
   }
 
-  private def createDb(databaseName: String): Future[Unit] = {
-    val q             = s"""CREATE DATABASE "$databaseName" WITH DURATION $defaultRetention REPLICATION 1 NAME ${databaseName}_rp"""
-    val url           = s"$baseUrl/query"
-    authenticatedUrl(url).addHttpHeaders("Content-Type"->"application/x-www-form-urlencoded").post(s"q=$q").flatMap { response =>
-      logger.info("status: " + response.status)
-      logger.debug(response.headers.mkString("\n"))
-      logger.debug(response.body)
+  def createDb(databaseName: String): Future[Unit] = {
+    val q = s"""CREATE DATABASE "$databaseName" WITH DURATION $defaultRetention REPLICATION 1 NAME ${databaseName}_rp"""
+    val url = s"$baseUrl/query"
+    authenticatedUrl(url).addHttpHeaders("Content-Type" -> "application/x-www-form-urlencoded").post(s"q=$q").flatMap {
+      response =>
+        logger.info("status: " + response.status)
+        logger.debug(response.headers.mkString("\n"))
+        logger.debug(response.body)
 
-      if (response.status != 200) {
-        Future.failed(new RuntimeException(s"Got status ${response.status} with body: ${response.body}"))
-      } else {
-        Future.successful(())
-      }
+        if (response.status != 200) {
+          Future.failed(new RuntimeException(s"Got status ${response.status} with body: ${response.body}"))
+        } else {
+          Future.successful(())
+        }
     }
   }
-
+  private def getResultsFromResponse(response: StandaloneWSResponse): Future[Results] = {
+    logger.debug("status: " + response.status)
+    response.status match {
+      case 200 => // ok
+        logger.trace(s"got data\n${Json.prettyPrint(response.body[JsValue])}")
+        import QueryResultProtocol._
+        val results = response.body[JsValue].as[Results]
+        if (results.hasErrors) {
+          // possible errors:
+          // too many points in the group by interval. maybe you forgot to specify a where time clause?
+          Future.failed(new RuntimeException(results.allErrors.mkString(" | ")))
+        } else {
+          Future.successful(results)
+        }
+      case other =>
+        Future.failed(new RuntimeException(s"Got status ${response.status} with body: ${response.body}"))
+    }
+  }
   private def authenticatedUrlForDatabase(databaseName: String, method: Method, precision: TimeUnit = MILLISECONDS) = {
     val influxPrecision = precision match {
       case MILLISECONDS => "ms"
