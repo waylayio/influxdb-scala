@@ -16,7 +16,7 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
   "then influxdb client" should {
 
     "create db with retention" in {
-      val testDb       = "testDb"
+      val testDb       = "testdb1.io"
       val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort, defaultRetention = "4w")
       Await.result(influxClient.createDb(testDb), 5.seconds)
       val resp = Await.result(influxClient.getRetention(testDb), 5.seconds)
@@ -36,7 +36,7 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
       val keyValue = x.get.head
 
       resp.hasErrors must be equalTo false
-      keyValue("name").get must be equalTo IString("testDb_rp")
+      keyValue("name").get must be equalTo IString(s"${testDb}_rp")
       keyValue("duration").get must be equalTo IString(s"${4 * 7 * 24}h0m0s")
     }
 

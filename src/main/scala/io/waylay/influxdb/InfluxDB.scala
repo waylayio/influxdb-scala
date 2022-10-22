@@ -198,7 +198,7 @@ class InfluxDB(
 
   def getRetention(dbName: String): Future[Results] =
     authenticatedUrlFor(Query)
-      .addQueryStringParameters("q" -> s"SHOW RETENTION POLICIES ON $dbName")
+      .addQueryStringParameters("q" -> s"""SHOW RETENTION POLICIES ON "$dbName"""")
       .get()
       .flatMap(getResultsFromResponse)
 
@@ -294,7 +294,8 @@ class InfluxDB(
   }
 
   def createDb(databaseName: String): Future[Unit] = {
-    val q = s"""CREATE DATABASE "$databaseName" WITH DURATION $defaultRetention REPLICATION 1 NAME ${databaseName}_rp"""
+    val q =
+      s"""CREATE DATABASE "$databaseName" WITH DURATION $defaultRetention REPLICATION 1 NAME "${databaseName}_rp" """
     val url = s"$baseUrl/query"
     authenticatedUrl(url).addHttpHeaders("Content-Type" -> "application/x-www-form-urlencoded").post(s"q=$q").flatMap {
       response =>
