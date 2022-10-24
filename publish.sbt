@@ -43,4 +43,9 @@ pomExtra := (<url>https://github.com/waylayio/influxdb-scala</url>
         <name>Gabriel Reid</name>
         <url>https://github.com/gabrielreid</url>
       </developer>
+      <developer>
+        <id>ramazanyich</id>
+        <name>Ramil Israfilov</name>
+        <url>https://github.com/ramazanyich</url>
+      </developer>
     </developers>)
