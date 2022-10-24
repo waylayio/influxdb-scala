@@ -1,8 +1,7 @@
 package io.waylay.influxdb
 
 import java.time.Instant
-
-import io.waylay.influxdb.Influx.{IFloat, IPoint, IString}
+import io.waylay.influxdb.Influx.{IFieldValue, IFloat, IPoint, IString}
 import io.waylay.influxdb.InfluxDB.{GT, IFieldFilter, LT, Mean, OR}
 import io.waylay.influxdb.query.InfluxQueryBuilder
 import io.waylay.influxdb.query.InfluxQueryBuilder.Interval
@@ -15,6 +14,31 @@ import scala.concurrent.duration._
 class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with IntegrationSpec {
 
   "then influxdb client" should {
+
+    "create db with retention" in {
+      val testDb       = "testdb1.io"
+      val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort, defaultRetention = "4w")
+      Await.result(influxClient.createDb(testDb), 5.seconds)
+      val resp = Await.result(influxClient.getRetention(testDb), 5.seconds)
+
+      resp.hasErrors must be equalTo false
+
+      val x = resp.results.map { results =>
+        val series = results.flatMap { result =>
+          result.series.getOrElse(Seq.empty)
+        }
+        series.map { serie =>
+          val firstRow = serie.values.map(_.head).getOrElse(Seq.fill(serie.columns.size)(None))
+          val keyVal   = serie.columns zip firstRow
+          keyVal.foldLeft(Map.empty[String, Option[IFieldValue]]) { case (acc, (k, v)) => acc ++ Map(k -> v) }
+        }
+      }
+      val keyValue = x.get.head
+
+      resp.hasErrors must be equalTo false
+      keyValue("name").get must be equalTo IString(s"${testDb}_rp")
+      keyValue("duration").get must be equalTo IString(s"${4 * 7 * 24}h0m0s")
+    }
 
     "return a version on ping" in {
       val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)
@@ -102,11 +126,11 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
           .fromUntil(Instant.ofEpochSecond(0), Instant.ofEpochSecond(200))
       )
 
-      //println(query)
+      // println(query)
 
       val data = Await.result(influxClient.query("dbname", query), 5.seconds)
       data.error must beNone
-      //println(data.results)
+      // println(data.results)
       data.results.get.head.series.get must have size 1
       data.results.get.head.series.get.head.values.get must be equalTo Seq(
         Seq(Some(IString("1970-01-01T00:00:00Z")), Some(IFloat(21.0))),
@@ -170,11 +194,11 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
         Some(OR(IFieldFilter("value", LT, IFloat(22)), IFieldFilter("value", GT, IFloat(23))))
       )
 
-      //println(query)
+      // println(query)
 
       val data = Await.result(influxClient.query("dbname", query), 5.seconds)
       data.error must beNone
-      //println(data.results)
+      // println(data.results)
       data.results.get.head.series.get must have size 1
       data.results.get.head.series.get.head.values.get must be equalTo Seq(
         Seq(Some(IString("1970-01-01T00:00:00Z")), Some(IFloat(20.0))),
@@ -218,11 +242,11 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
 
       val query = "show measurements"
 
-      //println(query)
+      // println(query)
 
       val data = Await.result(influxClient.query("testdb2", query), 5.seconds)
       data.error must beNone
-      //println(data.results)
+      // println(data.results)
       data.results.get.head.series.get must have size 1
       data.results.get.head.series.get.head.values.get must be equalTo Seq(
         Seq(Some(IString("co2"))),

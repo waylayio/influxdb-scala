@@ -40,9 +40,9 @@ object Influx {
     results: Option[Seq[Result]],
     error: Option[String]
   ) {
-    lazy val allErrors: Seq[String] = {
+    lazy val allErrors: Seq[String] =
       error.toSeq ++ results.getOrElse(Seq.empty).flatMap(_.error)
-    }
+
     lazy val hasErrors: Boolean                = allErrors.nonEmpty
     lazy val hasDatabaseNotFoundError: Boolean = allErrors.exists(_.contains("database not found"))
   }

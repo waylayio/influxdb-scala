@@ -41,7 +41,7 @@ private[influxdb] object WriteProtocol extends SharedProtocol {
           val stringValue = fieldValue match {
             case IInteger(value) => value.toString + "i"
             case IFloat(value)   =>
-              //"%g" format value
+              // "%g" format value
               // df.format(value)
               value.toString.replace('E', 'e')
             case IBoolean(value) => value.toString

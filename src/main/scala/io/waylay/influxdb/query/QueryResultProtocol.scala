@@ -27,7 +27,14 @@ object QueryResultProtocol {
     case other  => fieldValueReads.reads(other).map(Some(_))
   }
 
-  implicit val serieReads: Reads[Serie]     = Json.reads[Serie]
+  implicit val serieReads: Reads[Serie] = jsValue =>
+    for {
+      name    <- (jsValue \ "name").validateOpt[String]
+      tags    <- (jsValue \ "tags").validateOpt[Map[String, String]]
+      columns <- (jsValue \ "columns").validate[Seq[String]]
+      values  <- (jsValue \ "values").validateOpt[Seq[Seq[Option[IFieldValue]]]]
+    } yield Serie(name.getOrElse(""), tags, columns, values)
+
   implicit val seriesReads: Reads[Result]   = Json.reads[Result]
   implicit val resultsReads: Reads[Results] = Json.reads[Results]
 
