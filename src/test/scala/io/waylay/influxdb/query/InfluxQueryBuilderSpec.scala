@@ -19,7 +19,7 @@ class InfluxQueryBuilderSpec extends Specification {
         Interval.from(Instant.ofEpochMilli(0))
       )
 
-      //println(query.replace("\n", " "))
+      // println(query.replace("\n", " "))
 
       query must be equalTo """SELECT "value"
                               |FROM "CO2"
@@ -36,7 +36,7 @@ class InfluxQueryBuilderSpec extends Specification {
         Interval.fromUntil(Instant.ofEpochMilli(0), Instant.ofEpochMilli(1000))
       )
 
-      //println(query.replace("\n", " "))
+      // println(query.replace("\n", " "))
 
       query must be equalTo """SELECT "value"
                               |FROM "CO2"
@@ -48,7 +48,7 @@ class InfluxQueryBuilderSpec extends Specification {
     "remove empty lines in simple query" in {
       val query = InfluxQueryBuilder.simpleMultipleMeasurements(Seq("value"), "resource" -> "Living", Seq("CO2"))
 
-      //println(query.replace("\n", " "))
+      // println(query.replace("\n", " "))
 
       query must be equalTo """SELECT "value"
                               |FROM "CO2"
@@ -81,7 +81,7 @@ class InfluxQueryBuilderSpec extends Specification {
         Interval.relativeToNow(Duration.days(7))
       )
 
-      //println(query.replace("\n", " "))
+      // println(query.replace("\n", " "))
 
       query must be equalTo """SELECT COUNT(DISTINCT("value"))
                               |FROM "CO2"
@@ -98,7 +98,7 @@ class InfluxQueryBuilderSpec extends Specification {
         Duration.hours(1)
       )
 
-      //println(query.replace("\n", " "))
+      // println(query.replace("\n", " "))
 
       query must be equalTo """SELECT COUNT("value")
                               |FROM "CO2"
