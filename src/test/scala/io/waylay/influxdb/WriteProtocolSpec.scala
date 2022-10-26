@@ -39,7 +39,7 @@ class WriteProtocolSpec extends Specification {
 
     "write double points with at least single decimal" in {
       val myValue = 21d
-      //println(myValue.toString) // outputs scientific 2.1E-7
+      // println(myValue.toString) // outputs scientific 2.1E-7
 
       val dataLines = WriteProtocol.write(
         TimeUnit.MILLISECONDS,
@@ -51,7 +51,7 @@ class WriteProtocolSpec extends Specification {
 
     "write double points without scientific if not needed" in {
       val myValue = 0.21d
-      //println(myValue.toString) // outputs scientific 2.1E-7
+      // println(myValue.toString) // outputs scientific 2.1E-7
 
       val dataLines = WriteProtocol.write(
         TimeUnit.MILLISECONDS,
@@ -63,7 +63,7 @@ class WriteProtocolSpec extends Specification {
 
     "write double points with all digits" in {
       val myValue = 0.21212121d
-      //println(myValue.toString) // outputs scientific 2.1E-7
+      // println(myValue.toString) // outputs scientific 2.1E-7
 
       val dataLines = WriteProtocol.write(
         TimeUnit.MILLISECONDS,
@@ -75,7 +75,7 @@ class WriteProtocolSpec extends Specification {
 
     "write double points with scientific notation where needed" in {
       val myValue = 0.00000021d
-      //println(myValue.toString) // outputs scientific 2.1E-7
+      // println(myValue.toString) // outputs scientific 2.1E-7
 
       val dataLines = WriteProtocol.write(
         TimeUnit.MILLISECONDS,

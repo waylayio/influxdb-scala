@@ -50,7 +50,7 @@ trait IntegrationSpec extends BeforeAfterAllStopOnError {
   implicit val actorSystem: ActorSystem        = ActorSystem("test", ConfigFactory.load(classloader), classloader)
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   lazy val mappedInfluxPort: Int               = influxdbContainer.mappedPort(InfluxDB.DEFAULT_PORT)
-  val host                                     = "localhost" //state.docker.host
+  val host                                     = "localhost" // state.docker.host
   val wsClient: StandaloneAhcWSClient          = StandaloneAhcWSClient()
 
   // Do we have a around available that makes this more robust?
