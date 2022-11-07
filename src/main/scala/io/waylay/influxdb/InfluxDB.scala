@@ -224,7 +224,7 @@ class InfluxDB(
 
     val extraQueryString = Seq(
       chunkSize.map("chunk_size" -> _.toString),
-      epoch.map("epoch"          -> epochToQueryParam(_))
+      epoch.map("epoch" -> epochToQueryParam(_))
     ).flatten
 
     val req = authenticatedUrlForDatabase(databaseName, Query)
