@@ -1,7 +1,7 @@
 package io.waylay.influxdb
 
 import java.time.Instant
-import io.waylay.influxdb.Influx.{IFieldValue, IFloat, IPoint, IString}
+import io.waylay.influxdb.Influx.{IFieldValue, IFloat, IPoint, IString, Result}
 import io.waylay.influxdb.InfluxDB.{GT, IFieldFilter, LT, Mean, OR}
 import io.waylay.influxdb.query.InfluxQueryBuilder
 import io.waylay.influxdb.query.InfluxQueryBuilder.Interval
@@ -255,6 +255,47 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
         Seq(Some(IString("temperature")))
       )
 
+    }
+
+    "query aggregated data for string values returns result with error" in {
+      val stringmeasurement = "stringmeasurement"
+
+      val points = Seq(
+        IPoint(
+          stringmeasurement,
+          Seq("location" -> "room2"),
+          Seq("value"    -> IString("hello")),
+          Instant.ofEpochSecond(0)
+        ),
+        IPoint(
+          stringmeasurement,
+          Seq("location" -> "room2"),
+          Seq("value"    -> IString("hello2")),
+          Instant.ofEpochSecond(60)
+        )
+      )
+
+      val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)
+      Await.result(
+        influxClient.storeAndMakeDbIfNeeded("dbname", points),
+        5.seconds
+      )
+
+      val query = InfluxQueryBuilder.grouped(
+        Mean("value"),
+        "location" -> "room2",
+        stringmeasurement,
+        InfluxDB.Duration.minutes(2),
+        Interval
+          .fromUntil(Instant.ofEpochSecond(0), Instant.ofEpochSecond(200))
+      )
+
+      val data = Await.result(influxClient.query("dbname", query), 5.seconds)
+      data.error must beNone
+      data.results.get.head mustEqual Result(
+        None,
+        Some("unsupported mean iterator type: *query.stringInterruptIterator")
+      )
     }
   }
 }
