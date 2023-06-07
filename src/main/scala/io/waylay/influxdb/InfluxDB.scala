@@ -243,12 +243,6 @@ class InfluxDB(
           val results = response.body[JsValue].as[Results]
           if (results.hasDatabaseNotFoundError) {
             Future.successful(Results(Some(Seq.empty), None))
-          } else if (results.hasErrors) {
-            // possible errors:
-            // too many points in the group by interval. maybe you forgot to specify a where time clause?
-            // trying to do an aggregate on string values
-            //   Unsupported count iterator type: *influxql.stringReduceSliceIterator
-            Future.failed(new RuntimeException(results.allErrors.mkString(" | ")))
           } else {
             Future.successful(results)
           }
