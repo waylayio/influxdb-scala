@@ -21,16 +21,7 @@ trait IntegrationSpec extends BeforeAfterAllStopOnError {
   val DefaultInfluxDBAdminPort = 8083
   val DefaultInfluxDBPort      = 8086
 
-  lazy val influxdbContainer: Container = ContainerSpec("influxdb:1.8.9-alpine")
-    .withExposedPorts(DefaultInfluxDBPort, DefaultInfluxDBAdminPort)
-    .withReadyChecker(
-      //      PrintingLogLineContains("Listening on HTTP: [::]:8086")
-      DockerReadyChecker
-        .HttpResponseCode(DefaultInfluxDBPort, "/ping", code = 204)
-        .within(100.millis)
-        .looped(20, 250.millis)
-    )
-    .toContainer
+  def influxdbContainer: Container
 
   def beforeAll(): Unit =
     startAllOrFail()
@@ -52,6 +43,8 @@ trait IntegrationSpec extends BeforeAfterAllStopOnError {
   lazy val mappedInfluxPort: Int               = influxdbContainer.mappedPort(InfluxDB.DEFAULT_PORT)
   val host                                     = "localhost" // state.docker.host
   val wsClient: StandaloneAhcWSClient          = StandaloneAhcWSClient()
+  val org: String                              = "myorg"
+  val token: String                            = "mytoken"
 
   // Do we have a around available that makes this more robust?
 
@@ -65,7 +58,7 @@ trait IntegrationSpec extends BeforeAfterAllStopOnError {
     wsClient.close()
     materializer.shutdown()
     actorSystem.terminate()
-    try containerManager.stop()
+    try containerManager.stopRmAll()
     catch {
       case e: Throwable =>
         log.error(e.getMessage, e)
@@ -89,4 +82,38 @@ trait IntegrationSpec extends BeforeAfterAllStopOnError {
   def afterStart(): Unit = {}
 
   def beforeStop(): Unit = {}
+}
+
+trait IntegrationSpecV1 extends IntegrationSpec {
+  lazy val influxdbContainer: Container = ContainerSpec("influxdb:1.8.9-alpine")
+    .withExposedPorts(DefaultInfluxDBPort, DefaultInfluxDBAdminPort)
+    .withReadyChecker(
+      DockerReadyChecker
+        .HttpResponseCode(DefaultInfluxDBPort, "/ping", code = 204)
+        .within(100.millis)
+        .looped(20, 250.millis)
+    )
+    .toContainer
+
+}
+
+trait IntegrationSpecV2 extends IntegrationSpec {
+  lazy val influxdbContainer: Container = ContainerSpec("influxdb:2.7-alpine")
+    .withExposedPorts(DefaultInfluxDBPort, DefaultInfluxDBAdminPort)
+    .withReadyChecker(
+      DockerReadyChecker
+        .HttpResponseCode(DefaultInfluxDBPort, "/ping", code = 204)
+        .within(100.millis)
+        .looped(40, 250.millis)
+    )
+    .withEnv(
+      "DOCKER_INFLUXDB_INIT_MODE=setup",
+      "DOCKER_INFLUXDB_INIT_USERNAME=admin",
+      "DOCKER_INFLUXDB_INIT_PASSWORD=adminpasswordpasswordpassword",
+      s"DOCKER_INFLUXDB_INIT_ORG=$org",
+      "DOCKER_INFLUXDB_INIT_BUCKET=testbucket",
+      s"DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=$token"
+    )
+    .toContainer
+
 }

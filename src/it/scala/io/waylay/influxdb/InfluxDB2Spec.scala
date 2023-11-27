@@ -1,49 +1,43 @@
 package io.waylay.influxdb
 
-import java.time.Instant
-import io.waylay.influxdb.Influx.{IFieldValue, IFloat, IPoint, IString, Result}
-import io.waylay.influxdb.InfluxDB.{GT, IFieldFilter, LT, Mean, OR}
+import io.waylay.influxdb.Influx._
+import io.waylay.influxdb.InfluxDB._
 import io.waylay.influxdb.query.InfluxQueryBuilder
 import io.waylay.influxdb.query.InfluxQueryBuilder.Interval
 import org.specs2.concurrent.ExecutionEnv
 import org.specs2.mutable.Specification
+import play.api.libs.json.{JsDefined, JsString}
 
+import java.time.Instant
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with IntegrationSpecV1 {
+class InfluxDB2Spec(implicit ee: ExecutionEnv) extends Specification with IntegrationSpecV2 {
+  sequential
 
-  "then influxdb client" should {
+  "then influxdb2 client" should {
 
-    "create db with retention" in {
-      val testDb       = "testdb1.io"
-      val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort, defaultRetention = "4w")
-      Await.result(influxClient.createDb(testDb), 5.seconds)
-      val resp = Await.result(influxClient.getRetention(testDb), 5.seconds)
+    "create bucket with retention" in {
+      val bucket = "testdb2.io"
+      val influxClient =
+        new InfluxDB2(wsClient, host, org, token, mappedInfluxPort, defaultRetention = "4w")
+      Await.result(influxClient.createBucket(bucket), 5.seconds)
+      Await.result(influxClient.getRetention(bucket), 5.seconds) must be equalTo InfluxDB
+        .parseDurationLiteral("4w")
+        .toMillis / 1000
 
-      resp.hasErrors must be equalTo false
-
-      val x = resp.results.map { results =>
-        val series = results.flatMap { result =>
-          result.series.getOrElse(Seq.empty)
-        }
-        series.map { serie =>
-          val firstRow = serie.values.map(_.head).getOrElse(Seq.fill(serie.columns.size)(None))
-          val keyVal   = serie.columns zip firstRow
-          keyVal.foldLeft(Map.empty[String, Option[IFieldValue]]) { case (acc, (k, v)) => acc ++ Map(k -> v) }
-        }
-      }
-      val keyValue = x.get.head
-
-      resp.hasErrors must be equalTo false
-      keyValue("name").get must be equalTo IString(s"${testDb}_rp")
-      keyValue("duration").get must be equalTo IString(s"${4 * 7 * 24}h0m0s")
     }
 
     "return a version on ping" in {
-      val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)
-      val version      = Await.result(influxClient.ping, 5.seconds)
-      version must be equalTo "1.8.9"
+      val influxClient = new InfluxDB2(wsClient, host, org, token, mappedInfluxPort)
+      val version      = Await.result(influxClient.ping, 15.seconds)
+      version must be equalTo "v2.7.4"
+    }
+
+    "return ready" in {
+      val influxClient = new InfluxDB2(wsClient, host, org, token, mappedInfluxPort)
+      val stats        = Await.result(influxClient.ready, 15.seconds)
+      stats \ "status" must be equalTo JsDefined(JsString("ready"))
     }
 
     "store and query data" in {
@@ -69,11 +63,14 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
         "temperature"
       )
 
-      val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)
-      Await.result(
-        influxClient.storeAndMakeDbIfNeeded("dbname", points),
+      val influxClient =
+        new InfluxDB2(wsClient, host, org, token, mappedInfluxPort, defaultRetention = "INF")
+      val storeResult = Await.result(
+        influxClient.storeAndMakeBucketIfNeeded("dbname", points),
         5.seconds
       )
+      println(storeResult)
+      storeResult must be equalTo ()
 
       val data = Await.result(influxClient.query("dbname", query), 5.seconds)
 
@@ -111,9 +108,9 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
         )
       )
 
-      val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)
+      val influxClient = new InfluxDB2(wsClient, host, org, token, mappedInfluxPort, defaultRetention = "INF")
       Await.result(
-        influxClient.storeAndMakeDbIfNeeded("dbname", points),
+        influxClient.storeAndMakeBucketIfNeeded("dbname", points),
         5.seconds
       )
 
@@ -178,9 +175,9 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
         )
       )
 
-      val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)
+      val influxClient = new InfluxDB2(wsClient, host, org, token, mappedInfluxPort, defaultRetention = "INF")
       Await.result(
-        influxClient.storeAndMakeDbIfNeeded("dbname", points),
+        influxClient.storeAndMakeBucketIfNeeded("dbname", points),
         5.seconds
       )
 
@@ -234,9 +231,9 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
         )
       )
 
-      val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)
+      val influxClient = new InfluxDB2(wsClient, host, org, token, mappedInfluxPort, defaultRetention = "INF")
       Await.result(
-        influxClient.storeAndMakeDbIfNeeded("testdb2", points),
+        influxClient.storeAndMakeBucketIfNeeded("testdb2", points),
         5.seconds
       )
 
@@ -275,9 +272,9 @@ class InfluxDBSpec(implicit ee: ExecutionEnv) extends Specification with Integra
         )
       )
 
-      val influxClient = new InfluxDB(wsClient, host, mappedInfluxPort)
+      val influxClient = new InfluxDB2(wsClient, host, org, token, mappedInfluxPort, defaultRetention = "INF")
       Await.result(
-        influxClient.storeAndMakeDbIfNeeded("dbname", points),
+        influxClient.storeAndMakeBucketIfNeeded("dbname", points),
         5.seconds
       )
 
