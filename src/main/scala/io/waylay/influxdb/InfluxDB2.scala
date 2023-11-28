@@ -9,6 +9,7 @@ import play.api.libs.ws.DefaultBodyWritables._
 import play.api.libs.ws.JsonBodyWritables._
 import play.api.libs.ws.JsonBodyReadables._
 
+import java.time.Instant
 import scala.concurrent.duration.{MILLISECONDS, TimeUnit}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -110,6 +111,21 @@ class InfluxDB2(
     }
   }
 
+  def deleteSeries(bucketName: String, predicate: String, startTime: Instant, stopTime: Instant): Future[Unit] = {
+    val data = obj("predicate" -> predicate, "start" -> startTime, "stop" -> stopTime)
+    authenticatedUrlForBucket(bucketName, Delete2).post(data).flatMap { response =>
+      logger.debug("status: " + response.status)
+      response.status match {
+
+        case 204 => // ok
+          Future.successful(())
+
+        case other =>
+          Future.failed(new RuntimeException(s"Got status ${response.status} with body: ${response.body}"))
+      }
+    }
+
+  }
   def query(
     bucketName: String,
     query: String,

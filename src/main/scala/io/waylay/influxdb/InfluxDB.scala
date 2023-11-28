@@ -171,6 +171,10 @@ object InfluxDB {
   private[influxdb] case object Write2 extends Method {
     override val endpoint = "api/v2/write"
   }
+
+  private[influxdb] case object Delete2 extends Method {
+    override val endpoint = "api/v2/delete"
+  }
 }
 
 class InfluxDB(

@@ -294,5 +294,51 @@ class InfluxDB2Spec(implicit ee: ExecutionEnv) extends Specification with Integr
         Some("unsupported mean iterator type: *query.stringInterruptIterator")
       )
     }
+
+    "store and delete data" in {
+      val points = Seq(
+        IPoint(
+          "temperature",
+          Seq("location" -> "room1"),
+          Seq("value"    -> IFloat(20.3)),
+          Instant.now()
+        ),
+        // 2 values
+        IPoint(
+          "indoor",
+          Seq("location"    -> "room2", "building"      -> "A"),
+          Seq("temperature" -> IFloat(19.3), "humidity" -> IFloat(35.1)),
+          Instant.now()
+        )
+      )
+      val deletePredicate = InfluxQueryBuilder.deleteSeriesPredicate("location" -> "room1")
+
+      val query = InfluxQueryBuilder.simple(
+        Seq("value"),
+        "location" -> "room1",
+        "temperature"
+      )
+
+      val influxClient =
+        new InfluxDB2(wsClient, host, org, token, mappedInfluxPort, defaultRetention = "INF")
+      val storeResult = Await.result(
+        influxClient.storeAndMakeBucketIfNeeded("dbnamefordelete", points),
+        5.seconds
+      )
+
+      storeResult must be equalTo ()
+
+      val deleted =
+        Await.result(
+          influxClient.deleteSeries("dbnamefordelete", deletePredicate, Instant.ofEpochMilli(0), Instant.now()),
+          5.seconds
+        )
+
+      deleted must be equalTo ()
+      val data = Await.result(influxClient.query("dbnamefordelete", query), 5.seconds)
+
+      (data.error must beNone) and
+      (data.results.get.head.series must beNone)
+    }
   }
 }
