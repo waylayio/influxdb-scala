@@ -106,7 +106,7 @@ object InfluxDB {
   case class OR(filter1: IFilter, filter2: IFilter, other: IFilter*)                              extends IFilter
   case class NOT(filter: IFilter)                                                                 extends IFilter
 
-  private def epochToQueryParam(epoch: Epoch) = epoch match {
+  private[influxdb] def epochToQueryParam(epoch: Epoch) = epoch match {
     case Hours        => "h"
     case Minutes      => "m"
     case Seconds      => "s"
@@ -151,17 +151,29 @@ object InfluxDB {
     duration.amount.toString + stringUnit
   }
 
-  private sealed trait Method {
+  private[influxdb] sealed trait Method {
     def endpoint: String
   }
   private case object Write extends Method {
     override val endpoint = "write"
   }
-  private case object Query extends Method {
+  private[influxdb] case object Query extends Method {
     override val endpoint = "query"
   }
   private case object Ping extends Method {
     override val endpoint = "ping"
+  }
+
+  private[influxdb] case object Bucket extends Method {
+    override val endpoint = "api/v2/buckets"
+  }
+
+  private[influxdb] case object Write2 extends Method {
+    override val endpoint = "api/v2/write"
+  }
+
+  private[influxdb] case object Delete2 extends Method {
+    override val endpoint = "api/v2/delete"
   }
 }
 

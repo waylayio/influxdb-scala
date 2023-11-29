@@ -101,6 +101,11 @@ object InfluxQueryBuilder extends SharedProtocol {
       s" AND time <= ${i.toEpochMilli}ms"
     )
 
+  def deleteSeriesPredicate(tagSelector: (String, String)): String =
+    s"""
+       |${escapeValue(tagSelector._1)}=${escapeValue(tagSelector._2)}
+       |""".stripMargin.trim
+
   /**
    * String Literals (Single-quoted)
    * String literals are values (like integers or booleans). In InfluxQL, all tag values are string literals, and any
