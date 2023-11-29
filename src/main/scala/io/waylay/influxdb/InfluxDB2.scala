@@ -93,7 +93,7 @@ class InfluxDB2(
         val body = obj(
           "orgID"          -> s"$orgId",
           "name"           -> bucketName,
-          "retentionRules" -> arr(obj("type" -> "expire", "everySeconds" -> duration, "shardGroupDurationSeconds" -> 0))
+          "retentionRules" -> arr(obj("type" -> "expire", "everySeconds" -> duration))
         )
         authenticatedUrlFor(Bucket).addHttpHeaders("Content-Type" -> "application/json").post(body).flatMap {
           response =>
@@ -180,18 +180,17 @@ class InfluxDB2(
     }
 
   def getRetention(bucketName: String): Future[Long] =
-    authenticatedUrl(s"$baseUrl/${Bucket.endpoint}").addQueryStringParameters("name" -> bucketName).get().flatMap {
-      resp =>
-        if (resp.status != 200) {
-          Future.failed(new RuntimeException(s"Got status ${resp.status} with body: ${resp.body}"))
-        } else {
-          (resp.body[JsValue] \ "buckets" \ 0 \ "retentionRules")
-            .as[Seq[JsObject]]
-            .headOption
-            .map(o => (o \ "everySeconds").as[Long])
-            .map(Future.successful)
-            .getOrElse(Future.failed(new RuntimeException(s"bucket ${bucketName} not found")))
-        }
+    authenticatedUrlFor(Bucket).addQueryStringParameters("name" -> bucketName).get().flatMap { resp =>
+      if (resp.status != 200) {
+        Future.failed(new RuntimeException(s"Got status ${resp.status} with body: ${resp.body}"))
+      } else {
+        (resp.body[JsValue] \ "buckets" \ 0 \ "retentionRules")
+          .as[Seq[JsObject]]
+          .headOption
+          .map(o => (o \ "everySeconds").as[Long])
+          .map(Future.successful)
+          .getOrElse(Future.failed(new RuntimeException(s"bucket ${bucketName} not found")))
+      }
     }
 
   private def durationLiteralToDuration(durationLiteral: String): Long =
