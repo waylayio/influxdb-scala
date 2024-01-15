@@ -98,7 +98,7 @@ trait IntegrationSpecV1 extends IntegrationSpec {
 }
 
 trait IntegrationSpecV2 extends IntegrationSpec {
-  lazy val influxdbContainer: Container = ContainerSpec("influxdb:2.7-alpine")
+  lazy val influxdbContainer: Container = ContainerSpec("influxdb:2.7.4-alpine")
     .withExposedPorts(DefaultInfluxDBPort, DefaultInfluxDBAdminPort)
     .withReadyChecker(
       DockerReadyChecker
