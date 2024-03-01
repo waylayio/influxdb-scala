@@ -8,7 +8,7 @@ val logbackVersion       = "1.5.1"
 val specs2Version        = "4.20.5"
 val dockerTestkitVersion = "0.11.0"
 
-val scala2_12 = "2.12.18"
+val scala2_12 = "2.12.19"
 val scala2_13 = "2.13.13"
 
 scalaVersion       := scala2_13
