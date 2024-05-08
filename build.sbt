@@ -9,7 +9,7 @@ val specs2Version        = "4.20.6"
 val dockerTestkitVersion = "0.11.0"
 
 val scala2_12 = "2.12.19"
-val scala2_13 = "2.13.13"
+val scala2_13 = "2.13.14"
 
 scalaVersion       := scala2_13
 crossScalaVersions := Seq(scala2_12, scala2_13)
