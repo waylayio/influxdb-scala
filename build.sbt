@@ -1,6 +1,6 @@
 import sbt.Keys.{crossScalaVersions, scalacOptions}
 
-val playJsonVersion      = "2.10.6"
+val playJsonVersion      = "3.0.4"
 val playVersion          = "2.7.3" // test only
 val playWsVersion        = "2.1.11"
 val slf4jVersion         = "2.0.13"
@@ -43,7 +43,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "influxdb-scala",
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json"               % playJsonVersion,
+      "org.playframework" %% "play-json"               % playJsonVersion,
       "com.typesafe.play" %% "play-ws-standalone"      % playWsVersion,
       "com.typesafe.play" %% "play-ws-standalone-json" % playWsVersion,
       // "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
