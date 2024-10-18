@@ -37,7 +37,18 @@ lazy val nettyExclusions = Seq(
   "netty-codec-http"
 ).map(name => ExclusionRule(organization = "io.netty", name = name))
 
-ThisBuild / organization := "io.waylay.influxdb"
+ThisBuild / organization := "io.waylay"
+ThisBuild / homepage     := Some(url("https://waylay.io"))
+ThisBuild / developers := List(
+  Developer(
+    "ramazanyich",
+    "Ramil Israfilov",
+    "ramazanyich@gmail.com",
+    url("https://github.com/ramazanyich")
+  ),
+  Developer("brunoballekens", "Bruno Ballekens", "bruno@waylay.io", url("https://github.com/brunoballekens"))
+)
+ThisBuild / licenses := List("MIT License" -> url("http://www.opensource.org/licenses/mit-license.php"))
 
 lazy val root = (project in file("."))
   .settings(
