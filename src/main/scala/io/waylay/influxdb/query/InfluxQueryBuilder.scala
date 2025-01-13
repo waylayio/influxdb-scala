@@ -10,22 +10,22 @@ import java.time.Instant
 object InfluxQueryBuilder extends SharedProtocol {
 
   def simple(
-    fields: Seq[String],
-    tagSelector: (String, String),
-    measurement: String,
-    interval: Interval = Interval.beginningOfTimeUntilNow,
-    order: Order = Order.defaultOrder,
-    limit: Option[Long] = None
+      fields: Seq[String],
+      tagSelector: (String, String),
+      measurement: String,
+      interval: Interval = Interval.beginningOfTimeUntilNow,
+      order: Order = Order.defaultOrder,
+      limit: Option[Long] = None
   ): String =
     simpleMultipleMeasurements(fields, tagSelector, Seq(measurement), interval, order, limit)
 
   def simpleMultipleMeasurements(
-    fields: Seq[String],
-    tagSelector: (String, String),
-    measurements: Seq[String],
-    interval: Interval = Interval.beginningOfTimeUntilNow,
-    order: Order = Order.defaultOrder,
-    limit: Option[Long] = None
+      fields: Seq[String],
+      tagSelector: (String, String),
+      measurements: Seq[String],
+      interval: Interval = Interval.beginningOfTimeUntilNow,
+      order: Order = Order.defaultOrder,
+      limit: Option[Long] = None
   ): String = {
     val selects            = fields.map(escapeValue).mkString(", ")
     val measurementsString = measurements.map(escapeValue).mkString(", ")
@@ -42,26 +42,26 @@ object InfluxQueryBuilder extends SharedProtocol {
   }
 
   def grouped(
-    func: IFunction,
-    tagSelector: (String, String),
-    measurement: String,
-    grouping: Duration,
-    interval: Interval = Interval.beginningOfTimeUntilNow,
-    filter: Option[IFilter] = None,
-    limit: Option[Long] = None
+      func: IFunction,
+      tagSelector: (String, String),
+      measurement: String,
+      grouping: Duration,
+      interval: Interval = Interval.beginningOfTimeUntilNow,
+      filter: Option[IFilter] = None,
+      limit: Option[Long] = None
   ): String = groupedMultiple(Seq(func), tagSelector, measurement, grouping, interval, filter, limit)
 
   /**
    * Variation of grouped that can take multiple IFunctions
    */
   def groupedMultiple(
-    funcs: Seq[IFunction],
-    tagSelector: (String, String),
-    measurement: String,
-    grouping: Duration,
-    interval: Interval = Interval.beginningOfTimeUntilNow,
-    filter: Option[IFilter] = None,
-    limit: Option[Long] = None
+      funcs: Seq[IFunction],
+      tagSelector: (String, String),
+      measurement: String,
+      grouping: Duration,
+      interval: Interval = Interval.beginningOfTimeUntilNow,
+      filter: Option[IFilter] = None,
+      limit: Option[Long] = None
   ): String = {
 
     if (funcs.isEmpty) {
