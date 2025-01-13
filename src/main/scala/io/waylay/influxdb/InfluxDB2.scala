@@ -15,13 +15,13 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class InfluxDB2(
-  ws: StandaloneWSClient,
-  host: String = "localhost",
-  org: String,
-  token: String,
-  port: Int = InfluxDB.DEFAULT_PORT,
-  schema: String = "http",
-  defaultRetention: String = "INF"
+    ws: StandaloneWSClient,
+    host: String = "localhost",
+    org: String,
+    token: String,
+    port: Int = InfluxDB.DEFAULT_PORT,
+    schema: String = "http",
+    defaultRetention: String = "INF"
 )(implicit ec: ExecutionContext) {
   import InfluxDB._
 
@@ -55,10 +55,10 @@ class InfluxDB2(
     }
 
   def storeAndMakeBucketIfNeeded(
-    bucketName: String,
-    points: Seq[IPoint],
-    createDbIfNeeded: Boolean = true,
-    precision: TimeUnit = MILLISECONDS
+      bucketName: String,
+      points: Seq[IPoint],
+      createDbIfNeeded: Boolean = true,
+      precision: TimeUnit = MILLISECONDS
   ): Future[Unit] = {
     val data = WriteProtocol.write(precision, points: _*)
     logger.debug(s"storing data to $bucketName\n$data")
@@ -127,10 +127,10 @@ class InfluxDB2(
 
   }
   def query(
-    bucketName: String,
-    query: String,
-    chunkSize: Option[Int] = None,
-    epoch: Option[Epoch] = None
+      bucketName: String,
+      query: String,
+      chunkSize: Option[Int] = None,
+      epoch: Option[Epoch] = None
   ): Future[Results] = {
     logger.debug(query)
 
@@ -208,9 +208,9 @@ class InfluxDB2(
   }
 
   private def authenticatedUrlForBucket(
-    bucketName: String,
-    method: Method,
-    precision: TimeUnit = MILLISECONDS
+      bucketName: String,
+      method: Method,
+      precision: TimeUnit = MILLISECONDS
   ) = {
     val influxPrecision = precision match {
       case MILLISECONDS => "ms"
