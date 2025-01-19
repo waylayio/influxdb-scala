@@ -178,14 +178,14 @@ object InfluxDB {
 }
 
 class InfluxDB(
-    ws: StandaloneWSClient,
-    host: String = "localhost",
-    port: Int = InfluxDB.DEFAULT_PORT,
-    username: String = "root",
-    password: String = "root",
-    // var database: String = "",
-    schema: String = "http",
-    defaultRetention: String = "INF"
+  ws: StandaloneWSClient,
+  host: String = "localhost",
+  port: Int = InfluxDB.DEFAULT_PORT,
+  username: String = "root",
+  password: String = "root",
+  // var database: String = "",
+  schema: String = "http",
+  defaultRetention: String = "INF"
 )(implicit ec: ExecutionContext) {
 
   import InfluxDB._
@@ -227,10 +227,10 @@ class InfluxDB(
       .flatMap(getResultsFromResponse)
 
   def query(
-      databaseName: String,
-      query: String,
-      chunkSize: Option[Int] = None,
-      epoch: Option[Epoch] = None
+    databaseName: String,
+    query: String,
+    chunkSize: Option[Int] = None,
+    epoch: Option[Epoch] = None
   ): Future[Results] = {
     logger.debug(query)
 
@@ -271,10 +271,10 @@ class InfluxDB(
   // https://docs.influxdata.com/influxdb/v0.9/write_protocols/write_syntax/
   //
   def storeAndMakeDbIfNeeded(
-      databaseName: String,
-      points: Seq[IPoint],
-      createDbIfNeeded: Boolean = true,
-      precision: TimeUnit = MILLISECONDS
+    databaseName: String,
+    points: Seq[IPoint],
+    createDbIfNeeded: Boolean = true,
+    precision: TimeUnit = MILLISECONDS
   ): Future[Unit] = {
     val data = WriteProtocol.write(precision, points: _*)
     logger.debug(s"storing data to $databaseName\n$data")
