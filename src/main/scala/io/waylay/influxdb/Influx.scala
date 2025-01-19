@@ -16,29 +16,29 @@ object Influx {
   case class IString(value: String)   extends IFieldValue
 
   case class IPoint(
-      measurementName: String,
-      tags: Seq[(String, String)],
-      fields: Seq[(String, IFieldValue)],
-      timestamp: Instant
+    measurementName: String,
+    tags: Seq[(String, String)],
+    fields: Seq[(String, IFieldValue)],
+    timestamp: Instant
   )
 
   case class Serie(
-      name: String,
-      tags: Option[Map[String, String]],
-      columns: Seq[String],
-      values: Option[Seq[Seq[Option[IFieldValue]]]]
+    name: String,
+    tags: Option[Map[String, String]],
+    columns: Seq[String],
+    values: Option[Seq[Seq[Option[IFieldValue]]]]
   )
 
   // we could probably split this up in SeriesResult and ErrorResult
   case class Result(
-      series: Option[Seq[Serie]],
-      error: Option[String]
+    series: Option[Seq[Serie]],
+    error: Option[String]
   )
 
   // we should probably split this up in QueryResults and QueryError
   case class Results(
-      results: Option[Seq[Result]],
-      error: Option[String]
+    results: Option[Seq[Result]],
+    error: Option[String]
   ) {
     lazy val allErrors: Seq[String] =
       error.toSeq ++ results.getOrElse(Seq.empty).flatMap(_.error)
