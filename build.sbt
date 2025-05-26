@@ -1,4 +1,5 @@
 import sbt.Keys.{crossScalaVersions, scalacOptions}
+import xerial.sbt.Sonatype._
 
 val playJsonVersion      = "3.0.4"
 val playVersion          = "2.7.3" // test only
@@ -16,6 +17,7 @@ crossScalaVersions := Seq(scala2_12, scala2_13)
 
 releaseCrossBuild := true
 
+ThisBuild / publishTo := sonatypePublishToBundle.value
 ThisBuild / scalacOptions ++= Seq("-unchecked", "-deprecation")
 
 // we need both Test and IntegrationTest scopes for a correct pom, see https://github.com/sbt/sbt/issues/1380
