@@ -157,9 +157,9 @@ object InfluxQueryBuilder extends SharedProtocol {
 
   private def instantToWhereExpression(interval: Interval): Option[String] =
     interval match {
-      case Interval(None, None)        => None
-      case Interval(Some(start), None) => Some("time >= " + instantToExpression(start))
-      case Interval(None, Some(end))   => Some("time < " + instantToExpression(end))
+      case Interval(None, None)             => None
+      case Interval(Some(start), None)      => Some("time >= " + instantToExpression(start))
+      case Interval(None, Some(end))        => Some("time < " + instantToExpression(end))
       case Interval(Some(start), Some(end)) =>
         Some("time >= " + instantToExpression(start) + " AND time < " + instantToExpression(end))
     }
@@ -229,9 +229,9 @@ object InfluxQueryBuilder extends SharedProtocol {
     def fromJava(start: Option[java.time.Instant], end: Option[java.time.Instant]): Interval =
       Interval(start.map(Exact), end.map(Exact))
 
-    def from(start: Instant): Interval                    = Interval(Some(Exact(start)), None)
-    def fromUntil(start: Instant, end: Instant): Interval = Interval(Some(Exact(start)), Some(Exact(end)))
-    def relativeToNow(timeToGoBack: Duration): Interval   = Interval(Some(RelativeTo(Now, timeToGoBack)), None)
+    def from(start: Instant): Interval                            = Interval(Some(Exact(start)), None)
+    def fromUntil(start: Instant, end: Instant): Interval         = Interval(Some(Exact(start)), Some(Exact(end)))
+    def relativeToNow(timeToGoBack: Duration): Interval           = Interval(Some(RelativeTo(Now, timeToGoBack)), None)
     def relativeTo(timeToGoBack: Duration, to: Instant): Interval =
       Interval(Some(RelativeTo(Exact(to), timeToGoBack)), None)
   }

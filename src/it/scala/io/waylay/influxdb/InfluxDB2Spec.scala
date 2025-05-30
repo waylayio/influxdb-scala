@@ -18,7 +18,7 @@ class InfluxDB2Spec(implicit ee: ExecutionEnv) extends Specification with Integr
   "then influxdb2 client" should {
 
     "create bucket with retention" in {
-      val bucket = "testdb2.io"
+      val bucket       = "testdb2.io"
       val influxClient =
         new InfluxDB2(wsClient, host, org, token, mappedInfluxPort, defaultRetention = "4w")
       Await.result(influxClient.createBucket(bucket), 5.seconds)

@@ -31,7 +31,7 @@ private[influxdb] object WriteProtocol extends SharedProtocol {
 
     val lines = points.map { point =>
       val measurementName = escapeTag(point.measurementName)
-      val tags = point.tags
+      val tags            = point.tags
         .map { case (key, value) =>
           "," + escapeTag(key) + "=" + escapeTag(value)
         }

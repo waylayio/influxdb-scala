@@ -41,7 +41,7 @@ lazy val nettyExclusions = Seq(
 
 ThisBuild / organization := "io.waylay"
 ThisBuild / homepage     := Some(url("https://waylay.io"))
-ThisBuild / developers := List(
+ThisBuild / developers   := List(
   Developer(
     "ramazanyich",
     "Ramil Israfilov",
