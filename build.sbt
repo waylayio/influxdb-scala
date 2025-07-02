@@ -1,7 +1,7 @@
 import sbt.Keys.{crossScalaVersions, scalacOptions}
 import xerial.sbt.Sonatype._
 
-val playJsonVersion      = "3.0.4"
+val playJsonVersion      = "3.0.5"
 val playVersion          = "2.7.3" // test only
 val playWsVersion        = "2.1.11"
 val slf4jVersion         = "2.0.17"
