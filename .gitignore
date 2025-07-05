@@ -15,7 +15,10 @@ project/plugins/project/
 # Scala-IDE specific
 .scala_dependencies
 .worksheet
-
 .idea
-
 /.bsp/sbt.json
+
+# VsCode extensions
+.metals
+metals.sbt
+.bloop
