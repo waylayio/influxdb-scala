@@ -1,5 +1,4 @@
 import sbt.Keys.{crossScalaVersions, scalacOptions}
-import xerial.sbt.Sonatype._
 
 val playJsonVersion      = "3.0.5"
 val playVersion          = "2.7.3" // test only
@@ -17,7 +16,6 @@ crossScalaVersions := Seq(scala2_12, scala2_13)
 
 releaseCrossBuild := true
 
-ThisBuild / publishTo := sonatypePublishToBundle.value
 ThisBuild / scalacOptions ++= Seq("-unchecked", "-deprecation")
 
 // we need both Test and IntegrationTest scopes for a correct pom, see https://github.com/sbt/sbt/issues/1380
@@ -59,14 +57,12 @@ lazy val root = (project in file("."))
       "org.playframework" %% "play-json"               % playJsonVersion,
       "com.typesafe.play" %% "play-ws-standalone"      % playWsVersion,
       "com.typesafe.play" %% "play-ws-standalone-json" % playWsVersion,
-      // "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
       "org.slf4j" % "slf4j-api"      % slf4jVersion,
       "org.slf4j" % "jcl-over-slf4j" % slf4jVersion,
       // TEST
       "ch.qos.logback" % "logback-classic" % logbackVersion % TestAndIntegrationTest,
       "org.specs2"    %% "specs2-core"     % specs2Version  % TestAndIntegrationTest,
       "org.specs2"    %% "specs2-junit"    % specs2Version  % TestAndIntegrationTest,
-      // "com.typesafe.play" %% "play-ahc-ws" % playVersion % TestAndIntegrationTest, // neede for play-mockws
       "com.typesafe.play" %% "play-ahc-ws-standalone" % playWsVersion % TestAndIntegrationTest,
       "com.whisk" %% "docker-testkit-core" % dockerTestkitVersion % TestAndIntegrationTest excludeAll (nettyExclusions: _*)
     ).map(_.excludeAll(libraryExclusions: _*))
