@@ -18,6 +18,11 @@ releaseCrossBuild := true
 
 ThisBuild / scalacOptions ++= Seq("-unchecked", "-deprecation")
 
+ThisBuild / libraryDependencySchemes ++= Seq(
+  "org.scala-lang.modules" %% "scala-java8-compat"       % VersionScheme.Always,
+  "org.scala-lang.modules" %% "scala-parser-combinators" % VersionScheme.Always
+)
+
 // we need both Test and IntegrationTest scopes for a correct pom, see https://github.com/sbt/sbt/issues/1380
 val TestAndIntegrationTest = IntegrationTest.name + "," + Test.name
 
