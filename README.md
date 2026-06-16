@@ -18,24 +18,8 @@ libraryDependencies ++= Seq(
 
 Some example usage code is available [in the tests](src/it/scala/io/waylay/influxdb/InfluxDBSpec.scala)
 
-snapshots are available at: `https://oss.sonatype.org/content/repositories/snapshots`
+## Cutting a release
 
-### Releases/versioning
+We use sbt-dynver in combination with github actions.
 
-[`sbt-release`](https://github.com/sbt/sbt-release) is used for releases. Use `sbt release`.
-
-After release is finished the uploaded artifacts are not available automatically on OSS Sonatype main repositories.
-They are published to the staging repositories.
-Follow guidelines provided by Sonatype at [Releasing](https://central.sonatype.org/publish/release/#releasing-deployment-from-ossrh-to-the-central-repository-introduction) page
-to make the artifacts available publicly.
-
-### ScalaDoc
-
-Published [here](https://waylayio.github.io/influxdb-scala/latest/api) on [Github Pages](https://pages.github.com/) with [sbt-site](https://github.com/sbt/sbt-site) and [sbt-ghpages](https://github.com/sbt/sbt-ghpages). Automatically published as part of release process.
-
-Manually publishing the ScalaDocs can be done with the following command:
-
-```
-$ sbt ghpagesPushSite
-```
-
+All you have to do is create a tag named v#.#.# Snapshots with git hash are also published automatically from master or branches
