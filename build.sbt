@@ -11,10 +11,11 @@ val dockerTestkitVersion = "0.12.0"
 val scala2_12 = "2.12.21"
 val scala2_13 = "2.13.18"
 
+ThisBuild / versionScheme           := Some("semver-spec")
+ThisBuild / dynverSonatypeSnapshots := true
+
 scalaVersion       := scala2_13
 crossScalaVersions := Seq(scala2_12, scala2_13)
-
-releaseCrossBuild := true
 
 ThisBuild / scalacOptions ++= Seq("-unchecked", "-deprecation")
 
@@ -55,6 +56,16 @@ ThisBuild / developers   := List(
 )
 ThisBuild / licenses := List("MIT License" -> url("http://www.opensource.org/licenses/mit-license.php"))
 
+lazy val repoSettings = Seq(
+  publishTo := {
+    val nexus = "https://nexus.waylay.io"
+    if (isSnapshot.value)
+      Some("Waylay snapshot repo" at nexus + "/repository/maven-snapshots")
+    else
+      Some("Waylay releases repo" at nexus + "/repository/maven-releases")
+  }
+)
+
 lazy val root = (project in file("."))
   .settings(
     name := "influxdb-scala",
@@ -70,42 +81,11 @@ lazy val root = (project in file("."))
       "org.specs2"        %% "specs2-junit"           % specs2Version  % TestAndIntegrationTest,
       "com.typesafe.play" %% "play-ahc-ws-standalone" % playWsVersion  % TestAndIntegrationTest,
       "com.whisk" %% "docker-testkit-core" % dockerTestkitVersion % TestAndIntegrationTest excludeAll (nettyExclusions: _*)
-    ).map(_.excludeAll(libraryExclusions: _*))
+    ).map(_.excludeAll(libraryExclusions: _*)),
+    releaseNotesURL := scmInfo.value.map(scm => url(s"${scm.browseUrl}/releases"))
   )
+  .settings(repoSettings)
   .configs(IntegrationTest)
   .settings(Defaults.itSettings: _*)
-
-enablePlugins(GhpagesPlugin)
-enablePlugins(SiteScaladocPlugin)
-
-val publishScalaDoc = (ref: ProjectRef) =>
-  ReleaseStep(
-    action = releaseStepTaskAggregated(ref / ghpagesPushSite) // publish scaladoc
-  )
-
-val runIntegrationTest = (ref: ProjectRef) =>
-  ReleaseStep(
-    action = releaseStepTaskAggregated(ref / IntegrationTest / test)
-  )
-
-releaseProcess := {
-  import sbtrelease.ReleaseStateTransformations._
-
-  Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    runIntegrationTest(thisProjectRef.value),
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    publishArtifacts,
-    publishScalaDoc(thisProjectRef.value),
-    setNextVersion,
-    commitNextVersion,
-    pushChanges
-  )
-}
 
 git.remoteRepo := "git@github.com:waylayio/influxdb-scala.git"
